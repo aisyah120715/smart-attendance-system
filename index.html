@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome | Smart Attendance System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-dark: #0a1f44;
+      --primary: #1a3a8f;
+      --primary-light: #2a56d4;
+      --secondary: #f39c12;
+      --secondary-hover: #e67e22;
+      --text-light: #f8f9fa;
+      --text-muted: #d1d7e0;
+      --white: #ffffff;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      background: rgba(10, 31, 68, 0.7);
+      border-radius: 24px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      width: 90%;
+      max-width: 1200px;
+      display: flex;
+      padding: 60px;
+      gap: 5rem;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s ease;
+      margin: 20px 0;
+    }
+
+    .container:hover {
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .content {
+      flex: 1;
+      color: var(--white);
+      animation: fadeIn 0.8s ease-out;
+      min-width: 300px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      line-height: 1.2;
+      background: linear-gradient(to right, var(--white), #e0e0e0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--secondary);
+      border-radius: 3px;
+    }
+
+    p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      max-width: 500px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.85rem 2.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--secondary);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
+    }
+
+    .btn:hover {
+      background: var(--secondary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: none;
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn i {
+      margin-right: 8px;
+      font-size: 0.9rem;
+    }
+
+    .features {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .feature i {
+      color: var(--secondary);
+      font-size: 1.2rem;
+    }
+
+    .feature span {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .illustration {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      animation: fadeInRight 0.8s ease-out;
+      min-width: 300px;
+    }
+
+    .illustration-img {
+      width: 100%;
+      max-width: 450px;
+      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Improved Mobile Responsiveness */
+    @media (max-width: 992px) {
+      .container {
+        flex-direction: column-reverse;
+        padding: 3rem 2rem;
+        text-align: center;
+        gap: 3rem;
+        margin: 20px;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      h2::after {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .btn-group {
+        justify-content: center;
+      }
+
+      .features {
+        justify-content: center;
+      }
+
+      .illustration {
+        margin-bottom: 1rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .container {
+        padding: 2rem 1.5rem;
+        width: 95%;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      h2 {
+        font-size: 1.1rem;
+      }
+
+      p {
+        font-size: 0.95rem;
+      }
+
+      .btn-group {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+      }
+
+      .features {
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      h1 {
+        font-size: 1.6rem;
+      }
+      
+      h2 {
+        font-size: 1rem;
+      }
+      
+      .container {
+        padding: 1.5rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="illustration">
+      <img class="illustration-img" src="Designer.gif" alt="Attendance System Illustration">
+    </div>
+    <div class="content">
+      <h1>Smart Attendance Management</h1>
+      <h2>Modern solution for educational institutions</h2>
+      <p>
+        Our advanced system provides real-time attendance monitoring with role-based access, comprehensive analytics, and seamless integration across all devices. Designed for educational excellence.
+      </p>
+      
+      <div class="btn-group">
+        <a class="btn" id="getStartedBtn">
+          <i class="fas fa-rocket"></i> Get Started
+        </a>
+        <a class="btn btn-outline" id="loginLink">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+      </div>
+      
+      <div class="features">
+        <div class="feature">
+          <i class="fas fa-shield-alt"></i>
+          <span>Secure Access</span>
+        </div>
+        <div class="feature">
+          <i class="fas fa-chart-line"></i>
+          <span>Real-time Analytics</span>
+        </div>
+        <div class="feature">
+          <i class="fas fa-mobile-alt"></i>
+          <span>Mobile Friendly</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("getStartedBtn").addEventListener("click", function () {
+      window.location.href = "signup.html";
+    });
+
+    document.getElementById("loginLink").addEventListener("click", function (e) {
+      e.preventDefault();
+      window.location.href = "login.html";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up - Smart Attendance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+      --primary-dark: #0a1f44;
+      --primary: #1a3a8f;
+      --primary-light: #2a56d4;
+      --secondary: #f39c12;
+      --secondary-hover: #e67e22;
+      --text-light: #f8f9fa;
+      --text-muted: #d1d7e0;
+      --white: #ffffff;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: var(--text-light);
+    }
+
+    .main-content {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.95em;
+    }
+
+    select option {
+      background-color: #1a3a8f;
+      color: #ffffff;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+    }
+
+    .logo img {
+      height: 100px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-light);
+      font-size: 1em;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+      font-weight: bold;
+    }
+
+    .left-section, .right-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+    }
+
+    .left-section {
+      background: rgba(10, 31, 68, 0.7);
+      border-top-left-radius: 24px;
+      border-bottom-left-radius: 24px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      padding-left: 140px;
+      padding-right: 60px;
+    }
+
+    .right-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-top-right-radius: 24px;
+      border-bottom-right-radius: 24px;
+      align-items: center;
+    }
+
+    .left-section h1 {
+      color: var(--white);
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .left-section p {
+      margin-bottom: 30px;
+      color: var(--text-muted);
+    }
+
+    .auth-form {
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .auth-form input, .auth-form select, .auth-form button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.95em;
+    }
+
+    .auth-form input {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+
+    .auth-form button {
+      background-color: var(--secondary);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .auth-form button:hover {
+      background-color: var(--secondary-hover);
+    }
+
+    .auth-form .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85em;
+      color: var(--text-light);
+      margin-bottom: 10px;
+    }
+
+    .auth-form .options label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .auth-form .options span {
+      cursor: pointer;
+      color: var(--secondary);
+    }
+
+    .auth-form .options span:hover {
+      text-decoration: underline;
+    }
+
+    .auth-form .social-login {
+      display: flex;
+      justify-content: center;
+      font-size: 0.85em;
+      margin-top: 10px;
+    }
+
+    .social-login a {
+      color: var(--secondary);
+      text-decoration: none;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 0.5em;
+      color: red;
+    }
+
+    .illustration {
+      margin-top: 80px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .illustration img {
+      width: 600px;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25));
+    }
+
+    .signup-link {
+      text-align: center;
+      font-size: 0.9em;
+      margin-top: 10px;
+      color: var(--secondary);
+      cursor: pointer;
+    }
+
+    .signup-link:hover {
+      text-decoration: underline;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+    .signup-link, .signup-link a {
+  text-align: center;
+  font-size: 0.9em;
+  margin-top: 10px;
+  color: var(--secondary);
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.signup-link a:hover {
+  color: var(--secondary-hover);
+}
+  input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.85;
+  }
+
+    @media (max-width: 768px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .left-section, .right-section {
+        padding: 40px;
+        border-radius: 0;
+      }
+
+      .illustration img {
+        width: 100%;
+        max-width: 400px;
+      }
+
+
+    }
+  </style>
+</head>
+<body>
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="logo">
+      <img src="logo.png" alt="Logo">
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about-us.html">About Us</a>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <!-- LEFT SECTION -->
+    <div class="left-section">
+      <h1>Smart Attendance System<br>Empowering Education Through Technology</h1>
+      <p>Register to access your dashboard.</p>
+
+      <div class="auth-form">
+        <select id="role">
+          <option value="student">Student</option>
+          <option value="lecturer">Lecturer</option>
+          <option value="admin">Admin</option>
+        </select>
+        <input type="text" id="fName" placeholder="First Name">
+        <input type="text" id="lName" placeholder="Last Name">
+        <input type="text" id="signupUsername" placeholder="Username">
+        <input type="email" id="signupEmail" placeholder="Email Address">
+
+        <div class="password-wrapper">
+          <input type="password" id="signupPassword" placeholder="Password">
+          <span class="toggle-password" onclick="togglePassword('signupPassword')">👁️</span>
+        </div>
+
+        <div id="strengthBar"><div id="strength"></div></div>
+
+        <div class="password-wrapper">
+          <input type="password" id="confirmPassword" placeholder="Confirm Password">
+          <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
+        </div>
+
+        <button id="signupBtn" onclick="signUp()">Sign Up</button>
+      <div class="signup-link">
+        <a href="login.html">Already have an account? Login</a>
+      </div>
+
+        <div class="message" id="signupMessage"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT SECTION -->
+    <div class="right-section">
+      <div class="illustration">
+        <img src="signup_image.png" alt="Illustration" />
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import {
+      getFirestore,
+      setDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+  
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+      authDomain: "login-form-9b836.firebaseapp.com",
+      projectId: "login-form-9b836",
+      storageBucket: "login-form-9b836.appspot.com",
+      messagingSenderId: "878421828817",
+      appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+    };
+  
+    import {
+  getDocs,
+  collection,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+const emailInput = document.getElementById("signupEmail");
+const roleSelect = document.getElementById("role");
+
+emailInput.addEventListener("blur", async () => {
+  const email = emailInput.value.trim().toLowerCase();
+  const role = roleSelect.value;
+
+  if (role !== "lecturer") return; 
+
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("email", "==", email), where("role", "==", "lecturer"));
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    const lecturer = snapshot.docs[0].data();
+    document.getElementById("fName").value = lecturer.firstName || "";
+    document.getElementById("lName").value = lecturer.lastName || "";
+    document.getElementById("signupUsername").value = lecturer.username || "";
+  }
+});
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+  
+    const passwordInput = document.getElementById("signupPassword");
+    const strength = document.getElementById("strength");
+  
+    passwordInput.addEventListener("input", () => {
+      const val = passwordInput.value;
+      let score = 0;
+      if (val.length >= 6) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+  
+      const width = ["0%", "25%", "50%", "75%", "100%"][score];
+      const color = ["transparent", "red", "orange", "yellowgreen", "green"][score];
+  
+      strength.style.width = width;
+      strength.style.backgroundColor = color;
+    });
+  
+    async function signUp() {
+  const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+  const password = document.getElementById("signupPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const firstName = document.getElementById("fName").value.trim();
+  const lastName = document.getElementById("lName").value.trim();
+  const username = document.getElementById("signupUsername").value.trim();
+  const role = document.getElementById("role").value;
+  const msg = document.getElementById("signupMessage");
+
+  msg.className = "message error";
+  msg.textContent = "";
+
+  if (!firstName || !lastName || !username || !email || !password || !confirmPassword) {
+    msg.innerHTML = "<i>❗</i> Please fill in all fields.";
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    msg.innerHTML = "<i>❗</i> Passwords do not match.";
+    return;
+  }
+
+  if (role === "student" && !email.endsWith("@student.uitm.edu.my")) {
+    msg.innerHTML = "<i>📧</i> Student email must end with @student.uitm.edu.my";
+    return;
+  }
+
+  if ((role === "lecturer" || role === "admin") && !email.endsWith("@uitm.my")) {
+    msg.innerHTML = "<i>📧</i> Lecturer/Admin email must end with @uitm.my";
+    return;
+  }
+
+  let querySnapshot = null;
+  if (role === "lecturer") {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email), where("role", "==", "lecturer"));
+    querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      msg.innerHTML = "<i>❌</i> Your email is not yet approved by admin.";
+      return;
+    }
+  }
+
+  let userCredential;
+  try {
+    userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    if (error.code === "auth/email-already-in-use") {
+      msg.innerHTML = `<i>❗</i> This email has already been registered. Try logging in or resetting your password.`;
+      return;
+    } else {
+      msg.innerHTML = `<i>❗</i> ${error.message}`;
+      return;
+    }
+  }
+
+  try {
+    if (role === "lecturer") {
+      const approvedDoc = querySnapshot.docs[0];
+      await setDoc(doc(db, "users", approvedDoc.id), {
+        email,
+        firstName,
+        lastName,
+        username,
+        role,
+        registered: true,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } else {
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        email,
+        firstName,
+        lastName,
+        username,
+        role,
+        createdAt: new Date().toISOString()
+      });
+    }
+  } catch (firestoreErr) {
+    console.error("❌ Firestore Error:", firestoreErr.message);
+    msg.innerHTML = `<i>❗</i> Error saving user to Firestore: ${firestoreErr.message}`;
+    return;
+  }
+
+  msg.className = "message success";
+  msg.innerHTML = "<i>✅</i> Successfully registered! Redirecting to login...";
+  setTimeout(() => {
+    window.location.href = "login.html";
+  }, 2000);
+}
+
+  
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === "password" ? "text" : "password";
+    }
+  
+    window.signUp = signUp;
+    window.togglePassword = togglePassword;
+  </script>
+</body>
+</html>

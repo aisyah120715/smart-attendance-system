@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Class Schedules Migration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef1f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .message {
+      margin-top: 20px;
+      font-size: 18px;
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Class Schedules Migration</h1>
+    <p>Click the button below to start migrating data from Realtime Database to Firestore.</p>
+    <button id="migrateButton">Start Migration</button>
+    <div class="message" id="message"></div>
+  </div>
+
+  <!-- Firebase scripts with type="module" -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import { getFirestore, collection, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDufExYJU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+      authDomain: "login-form-9b836.firebaseapp.com",
+      projectId: "login-form-9b836",
+      storageBucket: "login-form-9b836.appspot.com",
+      messagingSenderId: "878421828817",
+      appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+
+    // Function to migrate class schedules from Realtime DB to Firestore
+    async function migrateClassSchedules() {
+      console.log("Migration started...");
+      try {
+        const classSchedulesRef = ref(database, 'class_schedules/');
+        const snapshot = await get(classSchedulesRef);
+        
+        if (!snapshot.exists()) {
+          document.getElementById("message").textContent = "❌ No class schedules found in Realtime Database!";
+          document.getElementById("message").classList.add("error");
+          return;
+        }
+
+        const data = snapshot.val();
+        let migratedCount = 0;
+
+        for (let classId in data) {
+          console.log(`Migrating class ${classId}...`);
+          const classData = data[classId];
+          await setDoc(doc(db, "class_schedules", classId), {
+            class_name: classData.class_name,
+            class_days: classData.class_days,
+            students: classData.students,
+            lecturer_username: classData.lecturer_username
+          });
+
+          migratedCount++;
+        }
+
+        document.getElementById("message").textContent = `${migratedCount} class schedules migrated to Firestore successfully!`;
+      } catch (error) {
+        console.log("Error during migration:", error);
+        document.getElementById("message").textContent = `❌ Error during migration: ${error.message}`;
+        document.getElementById("message").classList.add("error");
+      }
+    }
+
+    // Add event listener to the button
+    document.getElementById("migrateButton").addEventListener("click", migrateClassSchedules);
+  </script>
+
+</body>
+</html>

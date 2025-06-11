@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - Smart Attendance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Google Fonts + FontAwesome + SweetAlert + XLSX -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Main Styles -->
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --dark-bg: linear-gradient(135deg, #0f172a, #1e293b);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --highlight: #e2e8f0;
+      --spacing-unit: 1rem;
+      --border-radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-light);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    
+    /* Sidebar Styles */
+    aside {
+      width: 280px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: calc(var(--spacing-unit) * 1.5);
+      min-height: 100vh;
+      transition: var(--transition);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    aside h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: calc(var(--spacing-unit) * 2);
+      padding-bottom: var(--spacing-unit);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--highlight);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+    }
+    
+    aside h2 i {
+      margin-right: var(--spacing-unit);
+      color: var(--primary);
+    }
+    
+    aside ul { 
+      list-style: none; 
+    }
+    
+    aside ul li { 
+      margin: calc(var(--spacing-unit) * 0.75) 0; 
+    }
+    
+    aside ul li a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+    
+    aside ul li a:hover {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--highlight);
+      transform: translateX(5px);
+    }
+    
+    aside ul li a i {
+      margin-right: var(--spacing-unit);
+      width: 24px;
+      text-align: center;
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+    
+    aside ul li a.active {
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--highlight);
+    }
+    
+    aside ul li a.logout {
+      color: var(--danger);
+    }
+    
+    aside ul li a.logout:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Main Content Styles */
+    main {
+      flex: 1;
+      padding: calc(var(--spacing-unit) * 2);
+      overflow-x: hidden;
+    }
+    
+    /* Header Styles */
+    .header {
+      background: rgba(30, 41, 59, 0.6);
+      padding: calc(var(--spacing-unit) * 1.5);
+      border-radius: var(--border-radius);
+      margin-bottom: calc(var(--spacing-unit) * 2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: var(--transition);
+    }
+    
+    .header:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: calc(var(--spacing-unit) * 0.5);
+      color: var(--highlight);
+    }
+    
+    .header p {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    
+    /* Button Group Styles */
+    .btn-group {
+      margin-bottom: calc(var(--spacing-unit) * 2);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-unit);
+    }
+    
+    .btn-group button {
+      padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .btn-group button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .btn-group button i {
+      margin-right: calc(var(--spacing-unit) * 0.5);
+    }
+    
+    /* Card Styles */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-unit);
+      margin-bottom: calc(var(--spacing-unit) * 2);
+    }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: calc(var(--spacing-unit) * 1.5);
+      transition: var(--transition);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    }
+    
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-unit);
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+    
+    .card h3 i {
+      margin-right: calc(var(--spacing-unit) * 0.5);
+      color: var(--primary);
+    }
+    
+    .card p {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--highlight);
+      margin: 0;
+    }
+    
+    /* Table Styles */
+    .table-container {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-unit);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      margin-top: var(--spacing-unit);
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 800px;
+    }
+    
+    table th {
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--highlight);
+      font-weight: 500;
+      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    table td {
+      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    table tbody tr:hover td {
+      background: rgba(99, 102, 241, 0.05);
+    }
+    
+    table button {
+      padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 0.75);
+      border-radius: calc(var(--border-radius) * 0.7);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: var(--transition);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    table button i {
+      margin-right: calc(var(--spacing-unit) * 0.3);
+    }
+    
+    table button.edit-btn {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    
+    table button.edit-btn:hover {
+      background: rgba(245, 158, 11, 0.2);
+    }
+    
+    table button.delete-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      margin-left: calc(var(--spacing-unit) * 0.5);
+    }
+    
+    table button.delete-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .modal-content {
+      background: var(--card-bg);
+      margin: 5% auto;
+      padding: calc(var(--spacing-unit) * 2);
+      width: 500px;
+      max-width: 90%;
+      border-radius: var(--border-radius);
+      position: relative;
+      animation: slideIn 0.4s ease-out;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .modal h2 {
+      font-size: 1.5rem;
+      margin-bottom: calc(var(--spacing-unit) * 1.5);
+      color: var(--highlight);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+    
+    .modal h2 i {
+      margin-right: var(--spacing-unit);
+      color: var(--primary);
+    }
+    
+    .close {
+      position: absolute;
+      top: calc(var(--spacing-unit) * 1.5);
+      right: calc(var(--spacing-unit) * 1.5);
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .close:hover {
+      color: var(--highlight);
+      transform: rotate(90deg);
+    }
+    
+    /* Form Styles */
+    form label {
+      display: block;
+      margin-top: var(--spacing-unit);
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: calc(var(--spacing-unit) * 0.5);
+    }
+    
+    form input, form select {
+      width: 100%;
+      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+      border-radius: calc(var(--border-radius) * 0.7);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.95rem;
+      transition: var(--transition);
+      background: rgba(15, 23, 42, 0.5);
+      color: var(--highlight);
+    }
+    
+    form input:focus, form select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    form button {
+      margin-top: calc(var(--spacing-unit) * 1.5);
+      padding: calc(var(--spacing-unit) * 0.75);
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: calc(var(--border-radius) * 0.7);
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    form button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    form button i {
+      margin-right: calc(var(--spacing-unit) * 0.5);
+    }
+    
+    /* Preview Section Styles */
+    #previewSection {
+      margin-top: calc(var(--spacing-unit) * 1.5);
+      display: none;
+    }
+    
+    #previewSection h3 {
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-unit);
+      color: var(--highlight);
+      display: flex;
+      align-items: center;
+    }
+    
+    #previewSection h3 i {
+      margin-right: var(--spacing-unit);
+      color: var(--primary);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Loading Spinner */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+      margin-right: calc(var(--spacing-unit) * 0.5);
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: calc(var(--spacing-unit) * 3) var(--spacing-unit);
+      color: var(--text-muted);
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: var(--spacing-unit);
+      color: rgba(255,255,255,0.1);
+    }
+    
+    .empty-state p {
+      font-size: 1.1rem;
+      margin-top: calc(var(--spacing-unit) * 0.5);
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 1024px) {
+      aside {
+        width: 240px;
+        padding: var(--spacing-unit);
+      }
+      
+      main {
+        padding: var(--spacing-unit);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      
+      aside {
+        width: 100%;
+        min-height: auto;
+        padding: var(--spacing-unit);
+      }
+      
+      aside ul {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: calc(var(--spacing-unit) * 0.5);
+      }
+      
+      aside ul li {
+        margin: 0 calc(var(--spacing-unit) * 0.5) 0 0;
+        white-space: nowrap;
+      }
+      
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+      
+      .modal-content {
+        width: 95%;
+        margin: 10% auto;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .btn-group {
+        flex-direction: column;
+      }
+      
+      .btn-group button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside>
+    <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
+    <ul>
+      <li><a href="#" onclick="showSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+      <li><a href="#" onclick="showSection('users')"><i class="fas fa-users-cog"></i> Manage Users</a></li>
+      <li><a href="#" onclick="showSection('classes')"><i class="fas fa-chalkboard-teacher"></i> Manage Classes</a></li>
+      <li><a href="#" onclick="logout()" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li> 
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Header -->
+    <div class="header">
+      <h1>Welcome, <span id="adminName">Admin</span></h1>
+      <p>Manage your Smart Attendance System</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-group">
+      <button onclick="openModal('userModal')"><i class="fas fa-user-plus"></i> Add Student</button>
+      <button onclick="openModal('lecturerModal')"><i class="fas fa-chalkboard-user"></i> Add Lecturer</button>
+      <button onclick="openModal('classModal')"><i class="fas fa-layer-group"></i> Add Class</button>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div id="dashboardCards" class="grid-3">
+      <div class="card">
+        <h3><i class="fas fa-user-graduate"></i> Total Students</h3>
+        <p id="totalStudents"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-chalkboard-teacher"></i> Total Lecturers</h3>
+        <p id="totalLecturers"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-school"></i> Active Classes</h3>
+        <p id="activeClasses"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+      </div>
+    </div>
+
+    <!-- Manage Users Section -->
+    <div id="usersSection" style="display: none;">
+      <div class="table-container">
+        <h2><i class="fas fa-users-cog"></i> Manage Users</h2>
+        <div id="usersEmptyState" class="empty-state" style="display: none;">
+          <i class="fas fa-user-slash"></i>
+          <h3>No Users Found</h3>
+          <p>Add new users to get started</p>
+        </div>
+        <table id="usersTable" style="display: none;">
+          <thead>
+            <tr>
+              <th>Bil</th>
+              <th>Full Name</th>
+              <th>Role</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Manage Classes Section -->
+    <div id="classesSection" style="display: none;">
+      <div class="table-container">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Manage Classes</h2>
+        <div id="classesEmptyState" class="empty-state" style="display: none;">
+          <i class="fas fa-school"></i>
+          <h3>No Classes Found</h3>
+          <p>Add new classes to get started</p>
+        </div>
+        <table id="classesTable" style="display: none;">
+        <thead>
+            <tr>
+              <th>Bil</th>
+              <th>Class ID</th>
+              <th>Class Code</th>
+              <th>Class Name</th>
+              <th>Lecturer</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody id="classesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modals -->
+  <!-- Add Student Modal -->
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('userModal')">&times;</span>
+      <h2><i class="fas fa-user-graduate"></i> Add Students</h2>
+
+      <label for="uploadMode">Select Upload Mode:</label>
+      <select id="uploadMode" onchange="toggleUploadMode()" required>
+        <option value="excel">Upload Excel</option>
+        <option value="manual">Manual Entry</option>
+      </select>
+
+      <!-- Excel Upload Form -->
+      <form id="bulkUploadForm">
+        <label for="classGroupDropdown">Class ID:</label>
+        <select id="classGroupDropdown" required>
+          <option value="">Select Class ID</option>
+        </select>
+
+        <label for="classNameDropdown">Class Name:</label>
+        <select id="classNameDropdown" required>
+          <option value="">Select Class Name</option>
+        </select>
+
+        <label for="excelFile">Upload Excel File (.xlsx):</label>
+        <input type="file" id="excelFile" accept=".xlsx" required>
+
+        <button type="submit"><i class="fas fa-upload"></i> Upload Students</button>
+      </form>
+
+      <!-- Manual Entry Form -->
+      <form id="manualStudentForm" style="display: none;">
+        <label for="manualClassGroupDropdown">Class ID:</label>
+        <select id="manualClassGroupDropdown" required></select>
+
+        <label for="manualClassNameDropdown">Class Name:</label>
+        <select id="manualClassNameDropdown" required></select>
+
+        <label for="manualStudentId">Student ID:</label>
+        <input type="text" id="manualStudentId" required placeholder="e.g. 2022999988">
+
+        <label for="manualStudentName">Student Name:</label>
+        <input type="text" id="manualStudentName" required placeholder="e.g. John Doe">
+
+        <button type="submit"><i class="fas fa-plus"></i> Add Student</button>
+      </form>
+
+      <!-- Preview Section -->
+      <div id="previewSection">
+        <h3><i class="fas fa-list"></i> Preview Students</h3>
+        <table id="previewTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student ID</th>
+              <th>Full Name</th>
+            </tr>
+          </thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Lecturer Modal -->
+  <div id="lecturerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('lecturerModal')">&times;</span>
+      <h2><i class="fas fa-chalkboard-teacher"></i> Add Lecturer</h2>
+      <form id="addLecturerForm">
+        <label for="lecturerFirstName">First Name:</label>
+        <input type="text" id="lecturerFirstName" required placeholder="John">
+
+        <label for="lecturerLastName">Last Name:</label>
+        <input type="text" id="lecturerLastName" required placeholder="Doe">
+
+        <label for="lecturerEmail">Email:</label>
+        <input type="email" id="lecturerEmail" required placeholder="uid145267@uitm.my">
+
+        <label for="lecturerUsernameInput">Username:</label>
+        <input type="text" id="lecturerUsernameInput" required placeholder="uid145267">
+
+        <button type="submit"><i class="fas fa-plus"></i> Add Lecturer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div id="editUserModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('editUserModal')">&times;</span>
+      <h2><i class="fas fa-user-edit"></i> Edit User</h2>
+      <form id="editUserForm">
+        <label for="editFullName">Full Name:</label>
+        <input type="text" id="editFullName" required>
+
+        <label for="editRole">Role:</label>
+        <select id="editRole" required>
+          <option value="student">Student</option>
+          <option value="lecturer">Lecturer</option>
+          <option value="admin">Admin</option>
+        </select>
+
+        <label for="editEmail">Email:</label>
+        <input type="email" id="editEmail" required>
+
+        <button type="submit"><i class="fas fa-save"></i> Update User</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Class Modal -->
+  <div id="classModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('classModal')">&times;</span>
+      <h2><i class="fas fa-plus-circle"></i> Add New Class</h2>
+      <form id="addClassForm">
+        <label for="classDay">Class Day:</label>
+        <select id="classDay" required>
+          <option value="">Select Day</option>
+          <option value="Monday">Monday</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+        </select>
+
+        <label for="classHour">Class Start Time:</label>
+        <div style="display: flex; gap: 10px;">
+          <select id="classHour" required style="flex: 1;">
+            <option value="">Hour</option>
+            <script>
+              for (let i = 0; i < 24; i++) {
+                document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
+              }
+            </script>
+          </select>
+          <select id="classMinute" required style="flex: 1;">
+            <option value="">Minute</option>
+            <script>
+              for (let i = 0; i < 60; i += 5) {
+                document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
+              }
+            </script>
+          </select>
+        </div>
+
+        <label for="lecturerUsername">Lecturer Username:</label>
+        <input type="text" id="lecturerUsername" required placeholder="e.g. UID245123">
+
+        <label for="newClassId">Class ID:</label>
+        <input type="text" id="newClassId" required placeholder="e.g. CDCS2306A">
+
+        <label for="newClassCode">Class Code:</label>
+        <input type="text" id="newClassCode" required placeholder="e.g. CSC566">
+
+        <label for="newClassName">Class Name:</label>
+        <input type="text" id="newClassName" required placeholder="e.g. Advanced Web Development">
+
+        <button type="submit"><i class="fas fa-plus"></i> Create Class</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Class Modal -->
+  <div id="editClassModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('editClassModal')">&times;</span>
+      <h2><i class="fas fa-edit"></i> Edit Class</h2>
+      <form id="editClassForm">
+        <label for="editClassName">Class Name:</label>
+        <input type="text" id="editClassName" required>
+
+        <label for="editLecturerUsername">Lecturer Username:</label>
+        <input type="text" id="editLecturerUsername" required>
+
+        <button type="submit"><i class="fas fa-save"></i> Update Class</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase + JavaScript -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+      authDomain: "login-form-9b836.firebaseapp.com",
+      databaseURL: "https://login-form-9b836-default-rtdb.firebaseio.com",
+      projectId: "login-form-9b836",
+      storageBucket: "login-form-9b836.appspot.com",
+      messagingSenderId: "878421828817",
+      appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const firestore = getFirestore(app);
+    const auth = getAuth(app);
+
+    let editingClassId = null;
+    let editingUserId = null;
+
+    // Load Admin Name
+    async function loadAdminName() {
+      try {
+        const usersSnapshot = await getDocs(collection(firestore, "users"));
+        usersSnapshot.forEach(doc => {
+          const userData = doc.data();
+          if (userData.role === "admin") {
+            const firstName = userData.firstName || "";
+            const lastName = userData.lastName || "";
+            document.getElementById('adminName').textContent = `${firstName} ${lastName}`;
+          }
+        });
+      } catch (error) {
+        console.error('Error loading admin name:', error);
+        showErrorToast('Failed to load admin name');
+      }
+    }
+
+    // Dashboard Counts
+    function countTotalStudents() {
+      const classesRef = ref(db, 'class_schedules');
+      onValue(classesRef, (snapshot) => {
+        const uniqueStudents = new Set();
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+
+          for (const classCode in data) {
+            const classGroup = data[classCode].class;
+
+            if (classGroup) {
+              for (const subClassId in classGroup) {
+                const students = classGroup[subClassId].students;
+                if (students) {
+                  for (const studentId in students) {
+                    uniqueStudents.add(studentId);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        document.getElementById("totalStudents").innerHTML = uniqueStudents.size;
+      }, (error) => {
+        console.error('Error counting unique students:', error);
+        document.getElementById("totalStudents").innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+      });
+    }
+
+
+    async function countTotalLecturers() {
+      try {
+        const usersSnapshot = await getDocs(collection(firestore, "users"));
+        let count = 0;
+        usersSnapshot.forEach(doc => {
+          if (doc.data().role === "lecturer") count++;
+        });
+        document.getElementById("totalLecturers").innerHTML = count;
+      } catch (error) {
+        console.error('Error counting lecturers:', error);
+        document.getElementById("totalLecturers").innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+      }
+    }
+
+    function countActiveClasses() {
+      const classesRef = ref(db, 'class_schedules');
+      onValue(classesRef, (snapshot) => {
+      let totalClasses = 0;
+        const data = snapshot.val();
+        for (const classId in data) {
+          const classGroup = data[classId].class;
+          totalClasses += Object.keys(classGroup || {}).length;
+        }
+        document.getElementById("activeClasses").innerHTML = totalClasses;
+
+      }, (error) => {
+        console.error('Error counting classes:', error);
+        document.getElementById("activeClasses").innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+      });
+    }
+
+    // Load Class Dropdowns
+    async function loadClassDropdowns(mode = 'excel') {
+      const groupDropdown = document.getElementById(mode === 'manual' ? 'manualClassGroupDropdown' : 'classGroupDropdown');
+      const nameDropdown = document.getElementById(mode === 'manual' ? 'manualClassNameDropdown' : 'classNameDropdown');
+
+      groupDropdown.innerHTML = '<option value="">Select Class Code</option>';
+      nameDropdown.innerHTML = '<option value="">Select Class Name</option>';
+
+      try {
+        const snapshot = await get(ref(db, 'class_schedules'));
+        if (snapshot.exists()) {
+          const classGroups = snapshot.val();
+          for (const groupCode in classGroups) {
+            const option = document.createElement('option');
+            option.value = groupCode;
+            option.textContent = groupCode;
+            groupDropdown.appendChild(option);
+          }
+
+          groupDropdown.addEventListener('change', async function () {
+            nameDropdown.innerHTML = '<option value="">Select Class Name</option>';
+            const selectedGroup = this.value;
+            if (!selectedGroup) return;
+
+            const classRef = ref(db, `class_schedules/${selectedGroup}/class`);
+            const classSnap = await get(classRef);
+            if (classSnap.exists()) {
+              const classData = classSnap.val();
+              for (const key in classData) {
+                const className = classData[key].class_name || '';
+                const option = document.createElement('option');
+                option.value = `${selectedGroup}/class/${key}`;
+                option.textContent = className;
+                nameDropdown.appendChild(option);
+              }
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error loading dropdowns', err);
+        showErrorToast('Failed to load class list');
+      }
+    }
+
+
+    // Bulk Upload Students: Excel Read + Preview
+    document.getElementById('excelFile').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          showPreview(jsonData);
+        } catch (error) {
+          console.error('Error reading Excel file:', error);
+          showErrorToast('Invalid Excel file format');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function showPreview(data) {
+      const previewSection = document.getElementById('previewSection');
+      const previewBody = document.getElementById('previewBody');
+      previewBody.innerHTML = '';
+
+      if (data.length > 0) {
+        previewSection.style.display = 'block';
+        let index = 1;
+        for (const student of data) {
+          const studentId = student['Matric Num'] || student['student_id'] || student['ID'];
+          const fullName = student['Student Name'] || student['full_name'] || student['Name'];
+          if (studentId && fullName) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${index}</td>
+              <td>${studentId}</td>
+              <td>${fullName}</td>
+            `;
+            previewBody.appendChild(tr);
+            index++;
+          }
+        }
+      } else {
+        previewSection.style.display = 'none';
+      }
+    }
+
+   document.getElementById('bulkUploadForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const file = document.getElementById('excelFile').files[0];
+    const classPath = document.getElementById('classNameDropdown').value;
+
+    if (!file || !classPath) {
+      showErrorToast('Please select a class and upload a file.');
+      return;
+    }
+
+    showLoading('Uploading students...');
+    const reader = new FileReader();
+    reader.onload = async function (event) {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        let success = 0, failed = 0;
+        for (const student of jsonData) {
+          const studentId = student['Matric Num'] || student['student_id'] || student['ID'];
+          const fullName = student['Student Name'] || student['full_name'] || student['Name'];
+          if (studentId && fullName) {
+            try {
+              await set(ref(db, `class_schedules/${classPath}/students/${studentId}`), { name: fullName });
+              success++;
+            } catch (err) {
+              console.error('Upload error:', err);
+              failed++;
+            }
+          }
+        }
+
+        closeLoading();
+        if (failed) {
+          showWarningToast(`Uploaded ${success}, Failed ${failed}`);
+        } else {
+          showSuccessToast(`Uploaded ${success} students`);
+        }
+
+        closeModal('userModal');
+        document.getElementById('bulkUploadForm').reset();
+        document.getElementById('previewSection').style.display = 'none';
+      } catch (err) {
+        console.error('Read error:', err);
+        closeLoading();
+        showErrorToast('Upload failed');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+    document.getElementById('manualStudentForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const classPath = document.getElementById('manualClassNameDropdown').value;
+    const studentId = document.getElementById('manualStudentId').value.trim();
+    const studentName = document.getElementById('manualStudentName').value.trim();
+
+    if (!classPath || !studentId || !studentName) {
+      showErrorToast('Please fill in all fields');
+      return;
+    }
+
+    showLoading('Adding student...');
+
+    try {
+      await set(ref(db, `class_schedules/${classPath}/students/${studentId}`), {
+        name: studentName
+      });
+      closeLoading();
+      showSuccessToast('Student added successfully');
+      closeModal('userModal');
+      this.reset();
+    } catch (error) {
+      console.error('Error adding student:', error);
+      closeLoading();
+      showErrorToast('Failed to add student');
+    }
+  });
+
+
+    // Add Lecturer Form
+    document.getElementById('addLecturerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const firstName = document.getElementById('lecturerFirstName').value.trim();
+      const lastName = document.getElementById('lecturerLastName').value.trim();
+      const email = document.getElementById('lecturerEmail').value.trim();
+      const username = document.getElementById('lecturerUsernameInput').value.trim();
+
+      if (!firstName || !lastName || !email || !username) {
+        showErrorToast('Please fill in all fields');
+        return;
+      }
+
+      showLoading('Adding lecturer...');
+
+      try {
+        // Generate a new document ID automatically
+        const newDocRef = doc(collection(firestore, "users"));
+        await setDoc(newDocRef, {
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          username: username,
+          role: "lecturer",
+          createdAt: new Date().toISOString()
+        });
+
+        closeLoading();
+        showSuccessToast('Lecturer added successfully');
+        document.getElementById('addLecturerForm').reset();
+        closeModal('lecturerModal');
+        loadUsersTable();
+      } catch (error) {
+        console.error('Error adding lecturer:', error);
+        closeLoading();
+        showErrorToast('Failed to add lecturer');
+      }
+    });
+
+    // Section Switching
+    window.showSection = function(section) {
+      const dashboardElements = document.getElementById('dashboardCards');
+      const usersSection = document.getElementById('usersSection');
+      const classesSection = document.getElementById('classesSection');
+      
+      if (section === 'dashboard') {
+        dashboardElements.style.display = 'grid';
+        usersSection.style.display = 'none';
+        classesSection.style.display = 'none';
+      } else if (section === 'users') {
+        dashboardElements.style.display = 'none';
+        usersSection.style.display = 'block';
+        classesSection.style.display = 'none';
+        loadUsersTable();
+      } else if (section === 'classes') {
+        dashboardElements.style.display = 'none';
+        usersSection.style.display = 'none';
+        classesSection.style.display = 'block';
+        loadClassesTable();
+      }
+    };
+
+    // Modal Controls
+    window.openModal = function(id) {
+      if (id === 'userModal') {
+        loadClassDropdowns();
+      }
+      document.getElementById(id).style.display = 'block';
+    }
+
+    window.closeModal = function(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    window.toggleUploadMode = function () {
+      const mode = document.getElementById('uploadMode').value;
+      document.getElementById('bulkUploadForm').style.display = (mode === 'excel') ? 'block' : 'none';
+      document.getElementById('manualStudentForm').style.display = (mode === 'manual') ? 'block' : 'none';
+      if (mode === 'manual') {
+        loadClassDropdowns('manual');
+      } else {
+        loadClassDropdowns('excel');
+      }
+    };
+
+
+    // Logout
+    window.logout = function() {
+      Swal.fire({
+        title: 'Confirm Logout',
+        text: 'Are you sure you want to logout?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, logout',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          showLoading('Logging out...');
+          signOut(auth).then(() => {
+            closeLoading();
+            showSuccessToast('Logged out successfully');
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 1500);
+          }).catch((error) => {
+            console.error('Logout error:', error);
+            closeLoading();
+            showErrorToast('Logout failed');
+          });
+        }
+      });
+    };
+
+    // Load Users Table
+    async function loadUsersTable() {
+      const usersTableBody = document.getElementById('usersTableBody');
+      const usersTable = document.getElementById('usersTable');
+      const emptyState = document.getElementById('usersEmptyState');
+      
+      showLoading('Loading users...');
+      usersTableBody.innerHTML = '';
+
+      try {
+        const usersSnapshot = await getDocs(collection(firestore, "users"));
+        
+        if (usersSnapshot.empty) {
+          emptyState.style.display = 'block';
+          usersTable.style.display = 'none';
+          closeLoading();
+          return;
+        }
+
+        emptyState.style.display = 'none';
+        usersTable.style.display = 'table';
+        
+        let index = 1;
+        usersSnapshot.forEach(doc => {
+          const user = doc.data();
+          const fullName = (user.firstName && user.lastName) ? 
+            `${user.firstName} ${user.lastName}` : 
+            (user.fullName || 'N/A');
+            
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${index}</td>
+            <td>${fullName}</td>
+            <td>${user.role || '-'}</td>
+            <td>${user.email || '-'}</td>
+            <td>
+              <button class="edit-btn" onclick="openEditUser('${doc.id}', '${fullName}', '${user.role || ''}', '${user.email || ''}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="delete-btn" onclick="deleteUser('${doc.id}', '${fullName}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </td>
+          `;
+          usersTableBody.appendChild(tr);
+          index++;
+        });
+        
+        closeLoading();
+      } catch (error) {
+        console.error('Error loading users:', error);
+        closeLoading();
+        showErrorToast('Failed to load users');
+      }
+    }
+
+    window.deleteUser = async function(userId, userName) {
+      Swal.fire({
+        title: 'Confirm Deletion',
+        html: `Are you sure you want to delete <strong>${userName}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          showLoading('Deleting user...');
+          try {
+            await deleteDoc(doc(firestore, "users", userId));
+            closeLoading();
+            showSuccessToast('User deleted successfully');
+            loadUsersTable();
+          } catch (error) {
+            console.error('Error deleting user:', error);
+            closeLoading();
+            showErrorToast('Failed to delete user');
+          }
+        }
+      });
+    }
+
+    window.openEditUser = function(userId, fullName, role, email) {
+      editingUserId = userId;
+      document.getElementById('editFullName').value = fullName;
+      document.getElementById('editRole').value = role;
+      document.getElementById('editEmail').value = email;
+      openModal('editUserModal');
+    }
+
+    document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!editingUserId) return;
+
+      const fullName = document.getElementById('editFullName').value.trim();
+      const role = document.getElementById('editRole').value.trim();
+      const email = document.getElementById('editEmail').value.trim();
+
+      if (!fullName || !role || !email) {
+        showErrorToast('Please fill in all fields');
+        return;
+      }
+
+      showLoading('Updating user...');
+
+      try {
+        // Split full name into first and last names if it contains a space
+        const nameParts = fullName.split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        await setDoc(doc(firestore, "users", editingUserId), {
+          firstName: firstName,
+          lastName: lastName,
+          fullName: fullName,
+          role: role,
+          email: email,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        closeLoading();
+        showSuccessToast('User updated successfully');
+        closeModal('editUserModal');
+        loadUsersTable();
+      } catch (error) {
+        console.error('Error updating user:', error);
+        closeLoading();
+        showErrorToast('Failed to update user');
+      }
+    });
+
+    // Load Classes Table
+    function loadClassesTable() {
+      const classesTableBody = document.getElementById('classesTableBody');
+      const classesTable = document.getElementById('classesTable');
+      const emptyState = document.getElementById('classesEmptyState');
+      
+      showLoading('Loading classes...');
+      classesTableBody.innerHTML = '';
+
+      const classesRef = ref(db, 'class_schedules');
+      onValue(classesRef, (snapshot) => {
+        classesTableBody.innerHTML = '';
+        
+        if (!snapshot.exists()) {
+          emptyState.style.display = 'block';
+          classesTable.style.display = 'none';
+          closeLoading();
+          return;
+        }
+
+        emptyState.style.display = 'none';
+        classesTable.style.display = 'table';
+        
+        const classes = snapshot.val();
+        let index = 1;
+        for (const parentId in classes) {
+        const classGroup = classes[parentId].class;
+        for (const classKey in classGroup) {
+          const classData = classGroup[classKey];
+          const fullPath = `${parentId}/class/${classKey}`;
+          
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${index}</td>
+            <td>${parentId}</td>
+            <td>${classData.class_code || '-'}</td>
+            <td>${classData.class_name || '-'}</td>
+            <td>${classData.lecturer_username || '-'}</td>
+            <td>
+              <button class="edit-btn" onclick="openEditClass('${fullPath}', '${classData.class_name || ''}', '${classData.lecturer_username || ''}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="delete-btn" onclick="deleteClass('${fullPath}', '${classData.class_name || 'this class'}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </td>
+          `;
+
+
+          classesTableBody.appendChild(tr);
+          index++;
+        }
+      }
+
+        closeLoading();
+      }, (error) => {
+        console.error('Error loading classes:', error);
+        closeLoading();
+        showErrorToast('Failed to load classes');
+      });
+    }
+
+    window.deleteClass = async function(classId, className) {
+      Swal.fire({
+        title: 'Confirm Deletion',
+        html: `Are you sure you want to delete <strong>${className}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          showLoading('Deleting class...');
+          try {
+            await set(ref(db, `class_schedules/${classId}`), null);
+            closeLoading();
+            showSuccessToast('Class deleted successfully');
+          } catch (error) {
+            console.error('Error deleting class:', error);
+            closeLoading();
+            showErrorToast('Failed to delete class');
+          }
+        }
+      });
+    }
+
+    window.openEditClass = function(classId, className, lecturerUsername) {
+      editingClassId = classId;
+      document.getElementById('editClassName').value = className;
+      document.getElementById('editLecturerUsername').value = lecturerUsername;
+      openModal('editClassModal');
+    }
+
+    document.getElementById('editClassForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!editingClassId) return;
+
+      const className = document.getElementById('editClassName').value.trim();
+      const lecturerUsername = document.getElementById('editLecturerUsername').value.trim();
+
+      if (!className || !lecturerUsername) {
+        showErrorToast('Please fill in all fields');
+        return;
+      }
+
+      showLoading('Updating class...');
+
+      try {
+        const updates = {};
+        updates[`class_schedules/${editingClassId}/class_name`] = className;
+        updates[`class_schedules/${editingClassId}/lecturer_username`] = lecturerUsername;
+
+        await update(ref(db), updates);
+        closeLoading();
+        showSuccessToast('Class updated successfully');
+        closeModal('editClassModal');
+        loadClassesTable();
+      } catch (error) {
+        console.error('Error updating class:', error);
+        closeLoading();
+        showErrorToast('Failed to update class');
+      }
+    });
+
+    // Add Class Form
+    document.getElementById('addClassForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const classDay = document.getElementById('classDay').value.trim();
+      const classHour = parseInt(document.getElementById('classHour').value);
+      const classMinute = parseInt(document.getElementById('classMinute').value);
+      const lecturerUsername = document.getElementById('lecturerUsername').value.trim();
+      const newClassName = document.getElementById('newClassName').value.trim();
+      const newClassId = document.getElementById('newClassId').value.trim();
+      const newClassCode = document.getElementById('newClassCode').value.trim();
+
+      if (!classDay || isNaN(classHour) || isNaN(classMinute) || !lecturerUsername || !newClassName || !newClassId) {
+        showErrorToast('Please fill in all fields correctly');
+        return;
+      }
+
+      showLoading('Creating class...');
+
+      try {
+        const classRef = ref(db, `class_schedules/${newClassId}/class`);
+        const snapshot = await get(classRef);
+        const existingClasses = snapshot.exists() ? snapshot.val() : {};
+        const newKey = `class${Object.keys(existingClasses).length + 1}`;
+
+        await set(ref(db, `class_schedules/${newClassId}/class/${newKey}`), {
+          class_name: newClassName,
+          class_code: newClassCode,
+          lecturer_username: lecturerUsername,
+          class_days: {
+            [classDay.charAt(0).toUpperCase() + classDay.slice(1).toLowerCase()]: {
+              hour: classHour,
+              minute: classMinute
+            }
+          },
+          students: "",
+          createdAt: new Date().toISOString()
+        });
+
+        closeLoading();
+        showSuccessToast('Class created successfully');
+        document.getElementById('addClassForm').reset();
+        closeModal('classModal');
+        loadClassesTable();
+      } catch (error) {
+        console.error('Error creating class:', error);
+        closeLoading();
+        showErrorToast('Failed to create class');
+      }
+    });
+
+
+    // Helper Functions
+    function showLoading(message) {
+      Swal.fire({
+        title: message,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+    }
+
+    function closeLoading() {
+      Swal.close();
+    }
+
+    function showSuccessToast(message) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: message,
+        showConfirmButton: false,
+        timer: 3000
+      });
+    }
+
+    function showErrorToast(message) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: message,
+        showConfirmButton: false,
+        timer: 3000
+      });
+    }
+
+    function showWarningToast(message) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'warning',
+        title: message,
+        showConfirmButton: false,
+        timer: 3000
+      });
+    }
+
+    // Initialize on Page Load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAdminName();
+      countTotalStudents();
+      countTotalLecturers();
+      countActiveClasses();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | UiTM Tapah Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Montserrat", sans-serif;
+            background: linear-gradient(to right, #4b0082, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+            color: white;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Elements */
+        .decorative-dots {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: moveDots 8s infinite linear alternate;
+        }
+
+        .dot1 { top: 10%; left: 10%; }
+        .dot2 { bottom: 15%; right: 15%; }
+        .dot3 { top: 50%; left: 80%; }
+        .dot4 { bottom: 40%; right: 60%; }
+
+        @keyframes moveDots {
+            from { transform: translateY(0); }
+            to { transform: translateY(20px); }
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 1100px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0px 8px 25px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        /* Floating Wave Effect */
+        .wave {
+            position: absolute;
+            bottom: -30px;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: url('wave.svg');
+            background-size: cover;
+            animation: waveMove 6s infinite linear;
+            opacity: 0.3;
+        }
+
+        @keyframes waveMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100px); }
+        }
+
+        /* Welcome Section */
+        .welcome-content {
+            flex: 1;
+            text-align: left;
+            padding-right: 40px;
+        }
+
+        h1 {
+            font-size: 46px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 400;
+            color: #f3e5f5;
+        }
+
+        p {
+            font-size: 18px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            background-color: #ff8c00;
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: 0.3s ease-in-out;
+            box-shadow: 0px 5px 15px rgba(255, 140, 0, 0.4);
+        }
+
+        .btn:hover {
+            background-color: #ff6f00;
+            transform: translateY(-3px);
+        }
+
+        /* Links */
+        a {
+            color: #ffccff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Image Section */
+        .image-section {
+            flex: 1;
+            text-align: center;
+        }
+
+        .image-section img {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            animation: float 3s infinite ease-in-out alternate;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .welcome-content {
+                padding-right: 0;
+                text-align: center;
+            }
+            .image-section img {
+                max-width: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 36px;
+            }
+            h2 {
+                font-size: 30px;
+            }
+            p, a, .btn {
+                font-size: 20px;
+            }
+            .image-section img {
+                max-width: 350px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 28px;
+            }
+            h2 {
+                font-size: 22px;
+            }
+            p, a, .btn {
+                font-size: 14px;
+            }
+            .image-section img {
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Decorations -->
+    <div class="decorative-dots dot1"></div>
+    <div class="decorative-dots dot2"></div>
+    <div class="decorative-dots dot3"></div>
+    <div class="decorative-dots dot4"></div>
+
+    <div class="container">
+        <div class="welcome-content">
+            <h2>👋 HELLO, WELCOME!</h2>
+            <h1>UiTM TAPAH ATTENDANCE SYSTEM</h1>
+            <p>Manage student attendance effortlessly with our smart tracking system.</p>
+            <button class="btn" id="signUpBtn">Sign Up</button>
+            <p>Already have an account? <a href="#" id="signInLink">Log In</a></p>
+        </div>
+        <div class="image-section">
+            <img src="animation.gif" alt="Attendance Illustration">
+        </div>
+    </div>
+
+    <!-- Floating Wave -->
+    <div class="wave"></div>
+
+    <script src="welcome.js"></script>
+</body>
+</html>

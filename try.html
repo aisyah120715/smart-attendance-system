@@ -1,0 +1,23 @@
+public class Main {
+    public static void main(String[] args) {
+        int num[] = {5, 34, 78, 2, 45, 1, 98, 23, 97, -45};
+        printTwoBiggestNumbers(num);
+    }
+
+    public static void printTwoBiggestNumbers(int[] n) {
+        int first = Integer.MIN_VALUE;
+        int second = Integer.MIN_VALUE;
+
+        for (int i = 0; i < n.length; i++) {
+            if (n[i] > first) {
+                second = first;
+                first = n[i];
+            } else if (n[i] > second && n[i] != first) {
+                second = n[i];
+            }
+        }
+
+        System.out.println("First Biggest Number: " + first);
+        System.out.println("Second Biggest Number: " + second);
+    }
+}

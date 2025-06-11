@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Attendance Report</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --primary-light: #4895ef;
+      --secondary-color: #3a0ca3;
+      --success-color: #4cc9f0;
+      --warning-color: #f8961e;
+      --danger-color: #f72585;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --card-bg: rgba(30, 30, 40, 0.8);
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--light-color);
+      min-height: 100vh;
+      background-attachment: fixed;
+    }
+    
+    .container {
+      margin-top: 30px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .page-title {
+      color: var(--light-color);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+    
+    .lecturer-info {
+      background: rgba(67, 97, 238, 0.2);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      border: 1px solid rgba(67, 97, 238, 0.3);
+    }
+    
+    .lecturer-info i {
+      margin-right: 8px;
+      color: var(--primary-light);
+    }
+    
+    .table {
+      margin-top: 20px;
+      border-collapse: separate;
+      border-spacing: 0;
+      color: var(--light-color);
+    }
+    
+    .table thead th {
+      background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+      color: white;
+      border: none;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    
+    .table tbody tr {
+      background-color: rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .table tbody tr:hover {
+      background-color: rgba(67, 97, 238, 0.15);
+      transform: translateY(-1px);
+    }
+    
+    .table td, .table th {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 12px 15px;
+      vertical-align: middle;
+    }
+    
+    .form-select {
+      background-color: rgba(30, 30, 40, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--light-color);
+      border-radius: 6px;
+      padding: 10px 15px;
+    }
+    
+    .form-select:focus {
+      background-color: rgba(30, 30, 40, 0.9);
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+      color: var(--light-color);
+    }
+    
+    .btn-warning {
+      background-color: var(--warning-color);
+      border-color: var(--warning-color);
+      color: var(--dark-color);
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-warning:hover {
+      background-color: #e67e22;
+      border-color: #e67e22;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-warning:disabled {
+      opacity: 1;
+      background-color: rgba(72, 149, 239, 0.5);
+      border-color: transparent;
+      color: white;
+    }
+    
+    .status-good {
+      color: var(--success-color);
+      font-weight: 500;
+    }
+    
+    .status-warning {
+      color: var(--warning-color);
+      font-weight: 500;
+    }
+    
+    .status-danger {
+      color: var(--danger-color);
+      font-weight: 500;
+    }
+    
+    .status-nodata {
+      color: #95a5a6;
+      font-weight: 500;
+    }
+    
+    .summary-card {
+      background: rgba(30, 30, 40, 0.6);
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-top: 25px;
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--light-color);
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-light);
+    }
+    
+    /* Animation for buttons */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .btn-pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .lecturer-info {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header-container">
+    <h2 class="page-title">Class Attendance Report</h2>
+    <div id="lecturerNameDisplay" class="lecturer-info d-none">
+      <i class="fas fa-user-tie"></i>
+      <span id="lecturerName"></span>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <select id="classSelect" class="form-select mb-2">
+      <option value="">Select Your Class</option>
+    </select>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Present</th>
+          <th>Total Classes</th>
+          <th>Attendance %</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div id="summaryDiv" class="summary-card"></div>
+</div>
+
+<script>
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+    authDomain: "login-form-9b836.firebaseapp.com",
+    databaseURL: "https://login-form-9b836-default-rtdb.firebaseio.com",
+    projectId: "login-form-9b836",
+    storageBucket: "login-form-9b836.appspot.com",
+    messagingSenderId: "878421828817",
+    appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const firestore = firebase.firestore();
+const auth = firebase.auth();
+
+const classSelect = document.getElementById('classSelect');
+const tableBody = document.getElementById('tableBody');
+const summaryDiv = document.getElementById('summaryDiv');
+const lecturerNameDisplay = document.getElementById('lecturerNameDisplay');
+const lecturerNameSpan = document.getElementById('lecturerName');
+
+// Get lecturer's username from Firestore after login
+async function getLecturerUsername() {
+  const user = auth.currentUser;
+  if (!user) return null;
+
+  const userDoc = await firestore.collection('users').doc(user.uid).get();
+  if (userDoc.exists) {
+    return userDoc.data().username; // Assuming 'username' field exists
+  } else {
+    return null;
+  }
+}
+
+// Load lecturer's name and display it
+async function loadLecturerName() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userDoc = await firestore.collection('users').doc(user.uid).get();
+  if (userDoc.exists) {
+    const data = userDoc.data();
+    const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+    if (fullName) {
+      lecturerNameSpan.textContent = fullName;
+      lecturerNameDisplay.classList.remove('d-none');
+    }
+  }
+}
+
+// Load classes for the current lecturer
+async function loadLecturerClasses() {
+  const lecturerUsername = await getLecturerUsername();
+  if (!lecturerUsername) {
+    alert('Unable to fetch lecturer username.');
+    return;
+  }
+
+    const classesSnap = await db.ref('class_schedules').get();
+    classSelect.innerHTML = '<option value="">Select Your Class</option>';
+
+    classesSnap.forEach(classSnap => {
+      const classId = classSnap.key;
+      const classGroup = classSnap.val().class;
+      for (const classKey in classGroup) {
+        const classData = classGroup[classKey];
+        if (classData.lecturer_username === lecturerUsername) {
+          classSelect.innerHTML += `<option value="${classId}/class/${classKey}">${classId} - ${classData.class_name}</option>`;
+        }
+      }
+    });
+
+}
+
+// Fetch student attendance data
+async function fetchAttendanceData(classId, classKey) {
+  const classRef = db.ref(`class_schedules/${classId}/class/${classKey}/students`);
+  const attendanceRef = db.ref(`attendance/${classId}/class/${classKey}`);
+
+  const [studentsSnap, attendanceSnap] = await Promise.all([classRef.get(), attendanceRef.get()]);
+  if (!studentsSnap.exists() || !attendanceSnap.exists()) return [];
+
+  const students = studentsSnap.val();
+  const attendance = attendanceSnap.val();
+  const results = [];
+
+  // Collect all months with attendance records
+  const monthSet = new Set();
+
+  for (const studentId in students) {
+    const studentRecords = attendance[studentId] || {};
+    const monthlyData = {};
+
+    for (const date in studentRecords) {
+      const month = (studentRecords[date].timestamp || date).slice(0, 7);
+      monthSet.add(month);
+
+      if (!monthlyData[month]) monthlyData[month] = { total: 0, present: 0 };
+      monthlyData[month].total++;
+
+      const status = studentRecords[date].status || "Absent";
+      if (["On Time", "Late", "Approved Absence"].includes(status)) {
+        monthlyData[month].present++;
+      }
+    }
+
+    results.push({
+      studentId,
+      name: students[studentId].name,
+      monthlyData
+    });
+  }
+
+  return { results, months: Array.from(monthSet).sort() };
+}
+
+// Get status class based on percentage
+function getStatusClass(percentage, warningStatus) {
+  if (percentage === "N/A") return "status-nodata";
+  if (warningStatus === "Good") return "status-good";
+  if (warningStatus === "Final Warning") return "status-warning";
+  return "status-danger";
+}
+
+// Render attendance table
+async function renderAttendance() {
+ const classPath = classSelect.value;
+if (!classPath) {
+  alert("Please select a class.");
+  return;
+}
+
+const [selectedClassId, , classKey] = classPath.split("/");
+
+  const { results } = await fetchAttendanceData(selectedClassId, classKey);
+
+  tableBody.innerHTML = "";
+
+  results.sort((a, b) => a.name.localeCompare(b.name));
+
+  results.forEach((student, idx) => {
+    let totalPresent = 0;
+    let totalSessions = 0;
+
+    for (const month in student.monthlyData) {
+      const data = student.monthlyData[month];
+      totalPresent += data.present;
+      totalSessions += data.total;
+    }
+
+    const percentage = totalSessions > 0
+      ? ((totalPresent / totalSessions) * 100).toFixed(1)
+      : "N/A";
+
+    const warningStatus = percentage === "N/A" ? "No Data" :
+                          percentage < 80 ? "ZZ Status" :
+                          percentage < 90 ? "Final Warning" : "Good";
+
+    const statusClass = getStatusClass(percentage, warningStatus);
+
+    tableBody.innerHTML += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${student.studentId}</td>
+        <td>${student.name}</td>
+        <td>${totalPresent}</td>
+        <td>${totalSessions}</td>
+        <td>${percentage}%</td>
+        <td class="${statusClass}">${warningStatus}</td>
+        <td>
+          <button class="btn btn-sm btn-warning ${percentage !== "N/A" && warningStatus !== "Good" ? "btn-pulse" : ""}"
+            onclick="notifyStudent('${student.studentId}', '${student.name.replace(/'/g, "\\'")}', '${percentage}', '${warningStatus}', '${classPath}', this)"
+            <i class="fas fa-bell me-1"></i> Notify
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  summaryDiv.innerHTML = `<i class="fas fa-users me-2"></i>Total Students: ${results.length}`;
+}
+
+// On auth state changed, load lecturer classes and name
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    await loadLecturerClasses();
+    await loadLecturerName();
+  } else {
+    alert('User not logged in');
+    // Optional: redirect to login
+  }
+});
+
+// Listeners
+classSelect.addEventListener("change", renderAttendance);
+
+async function notifyStudent(studentId, name, percentage, warningStatus, classPath, btn) {
+  const [selectedClassId, , classKey] = classPath.split("/");
+
+  console.log("Student ID received:", studentId);  
+
+  if (!studentId) {
+    alert("Student ID is missing.");
+    btn.innerHTML = '<i class="fas fa-redo me-1"></i> Retry';
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const email = `${studentId}@student.uitm.edu.my`;
+    console.log("Constructed email:", email);
+
+    // Get class data (code + name)
+    const classSnap = await db.ref(`class_schedules/${selectedClassId}/class/${classKey}`).get();
+    const classData = classSnap.val();
+    const courseName = classData.class_name || classId;
+    const courseCode = classData.class_code || "-";
+
+    const currentUser = auth.currentUser;
+    const lecturerDoc = await firestore.collection('users').doc(currentUser.uid).get();
+   
+    let lecturerName = "Lecturer"; // default fallback
+    if (lecturerDoc.exists) {
+      const data = lecturerDoc.data();
+      lecturerName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+      console.log("✅ Lecturer Full Name:", lecturerName);
+    }else {
+      console.warn("⚠️ Lecturer document not found in Firestore");
+    }
+
+    const response = await fetch("https://sendwarningemail-b5aavz3aiq-uc.a.run.app", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email,
+        name: name,
+        studentID: studentId,
+        courseCode: courseCode,
+        course: courseName,
+        percent: percentage,
+        warning: warningStatus,
+        lecturerName: lecturerName
+      })
+    });
+
+    if (!response.ok) throw new Error("Failed to send");
+
+    btn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Sent';
+    btn.disabled = true;
+    btn.classList.remove("btn-pulse");
+  } catch (err) {
+    console.error("Error sending notification:", err);
+    alert(`Failed to send notification: ${err.message}`);
+    btn.innerHTML = '<i class="fas fa-redo me-1"></i> Retry';
+    btn.disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>

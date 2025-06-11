@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lecturer - Class List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #e0f7fa, #e1bee7);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 50px 40px;
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .container {
+      padding: 40px 20px;
+      flex: 1;
+    }
+    .class-card {
+      background: #fffffff0;
+      border-radius: 12px;
+      padding: 50px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .class-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .class-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .class-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .day-time {
+      font-size: 18px;
+      color: #666;
+      text-align: right;
+    }
+    .student-list {
+      margin-top: 15px;
+      display: none;
+      animation: expand 0.5s ease forwards;
+    }
+    @keyframes expand {
+      from { opacity: 0; transform: scaleY(0); transform-origin: top; }
+      to { opacity: 1; transform: scaleY(1); transform-origin: top; }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      font-size: 15px;
+    }
+    th {
+      background: #1e2868;
+      color: white;
+      text-transform: uppercase;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    .message {
+      text-align: center;
+      font-size: 18px;
+      color: #cc0000;
+      margin-top: 30px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  CLASS LIST - LECTURER
+</header>
+
+<div class="container" id="classContainer">
+  Loading classes...
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+  authDomain: "login-form-9b836.firebaseapp.com",
+  databaseURL: "https://login-form-9b836-default-rtdb.firebaseio.com",
+  projectId: "login-form-9b836",
+  storageBucket: "login-form-9b836.appspot.com",
+  messagingSenderId: "878421828817",
+  appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+const container = document.getElementById("classContainer");
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    const username = localStorage.getItem("username");
+    if (!username) {
+      container.innerHTML = "<div class='message'>❌ Username not found. Please login again.</div>";
+      return;
+    }
+    loadLecturerClasses(username);
+  } else {
+    container.innerHTML = "<div class='message'>❌ Not logged in. Please login first.</div>";
+  }
+});
+
+function loadLecturerClasses(username) {
+  db.ref("class_schedules").once("value").then(snapshot => {
+    container.innerHTML = "";
+
+    if (!snapshot.exists()) {
+      container.innerHTML = "<div class='message'>❗ No classes available.</div>";
+      return;
+    }
+
+    let foundAny = false;
+
+    snapshot.forEach(classGroupSnap => {
+      const classId = classGroupSnap.key;
+      const classes = classGroupSnap.child("class");
+
+      classes.forEach(singleClass => {
+        const data = singleClass.val();
+        if (data.lecturer_username !== username) return;
+
+        foundAny = true;
+        const classCode = data.class_code || "-";
+        const className = data.class_name || "Unnamed Class";
+        const classDays = data.class_days || {};
+        const students = data.students || {};
+
+        const card = document.createElement("div");
+        card.className = "class-card";
+
+        const header = document.createElement("div");
+        header.className = "class-header";
+        header.onclick = () => {
+          const studentList = card.querySelector(".student-list");
+          studentList.style.display = (studentList.style.display === "block") ? "none" : "block";
+        };
+
+        const title = document.createElement("div");
+        title.className = "class-title";
+        title.textContent = `${className} (${classCode}) - ${classId}`;
+
+        const dayTime = document.createElement("div");
+        dayTime.className = "day-time";
+        dayTime.innerHTML = Object.keys(classDays).map(day => {
+          const { hour, minute } = classDays[day];
+          const formattedDay = day.charAt(0).toUpperCase() + day.slice(1); // Capitalize
+          return `${formattedDay}: ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        }).join("<br>");
+
+        header.appendChild(title);
+        header.appendChild(dayTime);
+        card.appendChild(header);
+
+        const studentList = document.createElement("div");
+        studentList.className = "student-list";
+        const table = document.createElement("table");
+
+        const sortedStudents = Object.entries(students).sort((a, b) => a[1].name.localeCompare(b[1].name));
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Bil</th>
+              <th>Student ID</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sortedStudents.map(([id, info], index) => `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${id}</td>
+                <td>${info.name}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        `;
+
+        studentList.appendChild(table);
+        card.appendChild(studentList);
+
+        container.appendChild(card);
+      });
+    });
+
+    if (!foundAny) {
+      container.innerHTML = "<div class='message'>❗ No classes assigned to you.</div>";
+    }
+  }).catch(error => {
+    container.innerHTML = `<div class='message'>❗ Error loading classes: ${error.message}</div>`;
+  });
+}
+</script>
+
+
+</body>
+</html>

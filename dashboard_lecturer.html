@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecturer Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #141e30, #243b55);
+      color: #fff;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30px 60px;
+      background-color: #1a1a2e;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .logout-btn {
+      background: #e94560;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.3s;
+    }
+    .logout-btn:hover {
+      background: #d63447;
+    }
+    .dashboard-title {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 30px;
+      font-weight: 600;
+      color: #f7f7f7;
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      padding: 40px 60px;
+    }
+    .row {
+      display: contents;
+    }
+    .card {
+      background-color: #1f4068;
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .card i {
+      font-size: 35px;
+      color: #00adb5;
+      margin-bottom: 20px;
+    }
+    .card h3 {
+      font-size: 22px;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+    .card p {
+      font-size: 14px;
+      color: #cccccc;
+    }
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="font-size: 28px; font-weight: 600;">Lecturer Dashboard</div>
+    <div class="header-right">
+      <div id="welcome" style="font-size: 18px;">Loading...</div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="dashboard-title">Manage Your Tasks Efficiently</div>
+
+  <div class="dashboard">
+    <div class="card" onclick="location.href='class-list.html'">
+      <i class="fas fa-chalkboard-teacher"></i>
+      <h3>Class List</h3>
+      <p>View and manage your classes.</p>
+    </div>
+    <div class="card" onclick="location.href='class-schedule.html'">
+      <i class="fas fa-calendar-alt"></i>
+      <h3>Class Schedule</h3>
+      <p>Schedule upcoming lectures.</p>
+    </div>
+    <div class="card" onclick="location.href='monthly-report.html'">
+      <i class="fas fa-chart-line"></i>
+      <h3>Monthly Report</h3>
+      <p>View attendance analytics.</p>
+    </div>
+    <div class="card" onclick="location.href='attendance-logs.html'">
+      <i class="fas fa-user-clock"></i>
+      <h3>Attendance Logs</h3>
+      <p>Track student attendance.</p>
+    </div>
+    <div class="card" onclick="location.href='absence-requests.html'">
+      <i class="fas fa-file-alt"></i>
+      <h3>Absence Requests</h3>
+      <p>Review absence submissions.</p>
+    </div>
+    <div class="card" onclick="location.href='warning-center.html'">
+      <i class="fas fa-bell"></i>
+      <h3>Warnings</h3>
+      <p>See repeated absence cases.</p>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+      authDomain: "login-form-9b836.firebaseapp.com",
+      projectId: "login-form-9b836",
+      storageBucket: "login-form-9b836.appspot.com",
+      messagingSenderId: "878421828817",
+      appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        try {
+          const usersSnapshot = await db.collection('users').get();
+          usersSnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.email === user.email) {
+              const firstName = data.firstName || '';
+              const lastName = data.lastName || '';
+              document.getElementById('welcome').textContent = `Welcome, ${firstName} ${lastName}`;
+            }
+          });
+        } catch (error) {
+          document.getElementById('welcome').textContent = 'Error loading name';
+        }
+      } else {
+        document.getElementById('welcome').textContent = 'Not logged in';
+      }
+    });
+
+    function logout() {
+      Swal.fire({
+        title: 'Are you sure you want to logout?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, logout',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          auth.signOut()
+            .then(() => {
+              Swal.fire({
+                title: 'Logged Out!',
+                text: 'You have been successfully logged out.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+              }).then(() => {
+                window.location.href = "login.html";
+              });
+            })
+            .catch((error) => {
+              Swal.fire('Error!', 'Logout failed. Please try again.', 'error');
+            });
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

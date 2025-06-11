@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monthly Attendance Report</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+  body {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e2e8f0;
+  }
+  h2 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: #3b82f6;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .legend {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 500;
+    color: #cbd5e1;
+    font-size: 1rem;
+  }
+  .status-on-time {
+    color: #22c55e;
+    font-weight: bold;
+    text-align: center;
+  }
+  .status-late {
+    color: #fbbf24;
+    font-weight: bold;
+    text-align: center;
+  }
+  .status-absent {
+    color: #ef4444;
+    font-weight: bold;
+    text-align: center;
+  }
+  .summary-cell {
+    background-color: #1e293b;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: center;
+  }
+  .footer-summary {
+    text-align: right;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 1rem;
+    color: #f1f5f9;
+  }
+  .details-btn {
+    background: transparent;
+    border: 1px solid #3b82f6;
+    color: #3b82f6;
+    padding: 5px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .details-btn:hover {
+    background: #3b82f6;
+    color: #fff;
+  }
+  .form-label {
+    color: #cbd5e1;
+  }
+  .form-control, .form-select {
+    background-color: #1e293b;
+    color: #f8fafc;
+    border: 1px solid #334155;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+  }
+  .btn-success, .btn-danger {
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+  }
+  .btn-success {
+    background-color: #10b981;
+    color: #fff;
+  }
+  .btn-success:hover {
+    background-color: #059669;
+  }
+  .btn-danger {
+    background-color: #ef4444;
+    color: #fff;
+  }
+  .btn-danger:hover {
+    background-color: #dc2626;
+  }
+  .table-responsive {
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  .table {
+    background-color: #1e293b;
+    color: #ffffff;
+    border-radius: 0;
+  }
+  .table th, .table td {
+    border-color: #334155;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #ffffff;
+  }
+  .table td {
+    background-color: #1f2937;
+  }
+  .table thead th {
+    background-color: #1d4ed8;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: center;
+  }
+  .table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  .table td:last-child {
+    text-align: center;
+  }
+</style>
+
+</head>
+
+<body class="p-4">
+<div class="container">
+  <h2>Monthly Attendance Report</h2>
+
+  <div class="legend">
+    ✅ = On Time | ⚠️ = Late | ❌ = Absent
+  </div>
+
+  <div class="mb-4 row g-3 align-items-end">
+    <div class="col-md-4">
+      <label for="classSelect" class="form-label">Select Class</label>
+      <select id="classSelect" class="form-select">
+        <option value="">-- Select Class --</option>
+      </select>
+    </div>
+   <div class="col-md-4">
+  <label for="filterFromMonth" class="form-label">Filter From</label>
+  <select id="filterFromMonth" class="form-select">
+    <option value="2025-01">January</option>
+    <option value="2025-02">February</option>
+    <option value="2025-03">March</option>
+    <option value="2025-04" selected>April</option>
+    <option value="2025-05">May</option>
+    <option value="2025-06">June</option>
+    <option value="2025-07">July</option>
+    <option value="2025-08">August</option>
+    <option value="2025-09">September</option>
+    <option value="2025-10">October</option>
+    <option value="2025-11">November</option>
+    <option value="2025-12">December</option>
+  </select>
+</div>
+
+<div class="col-md-4">
+  <label for="filterToMonth" class="form-label">Filter To</label>
+  <select id="filterToMonth" class="form-select">
+    <option value="2025-01">January</option>
+    <option value="2025-02">February</option>
+    <option value="2025-03">March</option>
+    <option value="2025-04">April</option>
+    <option value="2025-05">May</option>
+    <option value="2025-06" selected>June</option>
+    <option value="2025-07">July</option>
+    <option value="2025-08">August</option>
+    <option value="2025-09">September</option>
+    <option value="2025-10">October</option>
+    <option value="2025-11">November</option>
+    <option value="2025-12">December</option>
+  </select>
+</div>
+
+    <div class="col-md-4">
+      <label for="studentFilter" class="form-label">Filter by Student ID</label>
+      <input type="text" id="studentFilter" class="form-control" placeholder="e.g. 2022827688">
+    </div>
+  </div>
+
+ <div id="exportOptions" class="card bg-dark text-white p-3 mb-3" style="display: none;">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label for="exportFromMonth" class="form-label">Export From</label>
+      <select id="exportFromMonth" class="form-select">
+        <option value="2025-01">January</option>
+        <option value="2025-02">February</option>
+        <option value="2025-03">March</option>
+        <option value="2025-04">April</option>
+        <option value="2025-05">May</option>
+        <option value="2025-06">June</option>
+        <option value="2025-07">July</option>
+        <option value="2025-08">August</option>
+        <option value="2025-09">September</option>
+        <option value="2025-10">October</option>
+        <option value="2025-11">November</option>
+        <option value="2025-12">December</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="exportToMonth" class="form-label">Export To</label>
+      <select id="exportToMonth" class="form-select">
+         <option value="2025-01">January</option>
+          <option value="2025-02">February</option>
+          <option value="2025-03">March</option>
+          <option value="2025-04">April</option>
+          <option value="2025-05">May</option>
+          <option value="2025-06">June</option>
+          <option value="2025-07">July</option>
+          <option value="2025-08">August</option>
+          <option value="2025-09">September</option>
+          <option value="2025-10">October</option>
+          <option value="2025-11">November</option>
+          <option value="2025-12">December</option>
+      </select>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+      <button id="confirmExport" class="btn btn-primary w-100">Confirm Export</button>
+    </div>
+  </div>
+</div>
+
+
+
+  <div id="reportSection" style="display:none;">
+    <h5 class="mb-3">Class: <span id="selectedClass" class="text-primary"></span></h5>
+    <div class="mb-3">
+     <button id="excelBtn" class="btn btn-success me-2">Export to Excel</button>
+    <button id="pdfBtn" class="btn btn-danger">Export to PDF</button>
+
+    </div>
+    
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover" id="attendanceTable">
+        <thead class="table-light">
+          <tr id="headerRow">
+            <th>Bil</th>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Present</th>
+            <th>Total</th>
+            <th>%</th>
+            <th></th> 
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+         
+        </tbody>
+      </table>
+    </div>
+    <div id="classSummary" class="footer-summary"></div>
+  </div>
+</div>
+
+<script type="module">
+
+
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+  authDomain: "login-form-9b836.firebaseapp.com",
+  databaseURL: "https://login-form-9b836-default-rtdb.firebaseio.com",
+  projectId: "login-form-9b836",
+  storageBucket: "login-form-9b836.appspot.com",
+  messagingSenderId: "878421828817",
+  appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth();
+
+const classSelect = document.getElementById("classSelect");
+const studentFilter = document.getElementById("studentFilter");
+const filterFromMonth = document.getElementById("filterFromMonth");
+const filterToMonth = document.getElementById("filterToMonth");
+const tableBody = document.getElementById("tableBody");
+const selectedClass = document.getElementById("selectedClass");
+const reportSection = document.getElementById("reportSection");
+const headerRow = document.getElementById("headerRow");
+const summaryDiv = document.getElementById("classSummary");
+
+// Restore previous selections if exist
+if (sessionStorage.getItem("selectedClass")) {
+  classSelect.value = sessionStorage.getItem("selectedClass");
+}
+if (sessionStorage.getItem("selectedMonth")) {
+  monthSelect.value = sessionStorage.getItem("selectedMonth");
+}
+if (sessionStorage.getItem("studentFilter")) {
+  studentFilter.value = sessionStorage.getItem("studentFilter");
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const username = localStorage.getItem("username");
+    if (!username) {
+      alert("Username not found.");
+      return;
+    }
+    await loadLecturerClasses(username);
+    await fetchAndRender();  // after class loaded, render immediately
+  } else {
+    alert("Not logged in.");
+  }
+});
+
+async function loadLecturerClasses(username) {
+  const classSnap = await get(child(ref(db), "class_schedules"));
+  classSelect.innerHTML = `<option value="">-- Select Class --</option>`;
+
+  for (const classId in classSnap.val()) {
+    const classGroup = classSnap.val()[classId].class;
+
+    for (const classKey in classGroup) {
+      const classData = classGroup[classKey];
+      if (classData.lecturer_username === username) {
+        const option = document.createElement("option");
+        option.value = `${classId}/class/${classKey}`;
+        option.textContent = `${classId} - ${classData.class_name}`;
+        classSelect.appendChild(option);
+      }
+    }
+  }
+
+  if (sessionStorage.getItem("selectedClass")) {
+    classSelect.value = sessionStorage.getItem("selectedClass");
+  }
+}
+
+
+function setupEventListeners() {
+  // First remove any existing listeners
+[classSelect, filterFromMonth, filterToMonth, studentFilter].forEach(el => {
+  el.removeEventListener("change", handleFilterChange);
+  el.removeEventListener("input", handleFilterInput);
+  el.addEventListener("change", handleFilterChange);
+  el.addEventListener("input", handleFilterInput);
+});
+
+
+  // Add fresh listeners
+  classSelect.addEventListener("change", handleFilterChange);
+  studentFilter.addEventListener("input", handleFilterInput);
+}
+
+function handleFilterChange() {
+  sessionStorage.setItem("selectedClass", classSelect.value);
+  sessionStorage.setItem("studentFilter", studentFilter.value);
+  fetchAndRender();
+}
+
+function handleFilterInput() {
+  sessionStorage.setItem("studentFilter", studentFilter.value);
+  fetchAndRender();
+}
+
+// Call this once during initialization
+setupEventListeners();
+
+async function fetchAndRender() {
+  const cls = classSelect.value;
+  const fromMonth = filterFromMonth.value;
+  const toMonth = filterToMonth.value;
+  const filter = studentFilter.value.trim();
+
+  selectedClass.textContent = classSelect.options[classSelect.selectedIndex].text;
+  reportSection.style.display = cls ? "block" : "none";
+  tableBody.innerHTML = "";
+  summaryDiv.innerHTML = "";
+
+  if (!cls) return;
+
+  const [classId, , classKey] = cls.split("/");
+  const classSnap = await get(child(ref(db), `attendance/${classId}/class/${classKey}`));
+
+  if (!classSnap.exists()) return;
+
+  const students = classSnap.val();
+  let headers = new Set();
+  let studentDataMap = {};
+
+  // Process all student data
+  for (const studentId in students) {
+    if (filter && !studentId.includes(filter)) continue;
+
+    const attendanceRecords = students[studentId];
+    const isWithinRange = (timestamp) => {
+      const date = timestamp?.split(" ")[0];
+      if (!date) return false;
+      const month = date.slice(0, 7);
+      return month >= fromMonth && month <= toMonth;
+    };
+
+  const monthRecords = Object.entries(attendanceRecords)
+  .filter(([_, record]) => isWithinRange(record.timestamp));
+
+    if (monthRecords.length === 0) continue;
+
+    // Initialize student data if not exists
+    if (!studentDataMap[studentId]) {
+      studentDataMap[studentId] = {
+        id: studentId,
+        name: monthRecords[0][1].name || "Unknown",
+        data: {},
+        present: 0,
+        total: 0
+      };
+    }
+
+    // Process each attendance record
+    monthRecords.forEach(([_, record]) => {
+      const date = record.timestamp.split(" ")[0];
+      headers.add(date);
+
+      let status = "❌";
+      let statusClass = "status-absent";
+      
+      if (record.status === "On Time") {
+        status = "✅";
+        statusClass = "status-on-time";
+        studentDataMap[studentId].present++;
+      } else if (record.status === "Late") {
+        status = "⚠️";
+        statusClass = "status-late";
+        studentDataMap[studentId].present++;
+      }
+
+      studentDataMap[studentId].data[date] = { status, statusClass };
+      studentDataMap[studentId].total++;
+    });
+  }
+
+  const studentData = Object.values(studentDataMap);
+  const dates = Array.from(headers).sort();
+
+  // Build header row
+  headerRow.innerHTML = `<th>Bil</th><th>Student ID</th><th>Name</th>`;
+  dates.forEach(date => headerRow.innerHTML += `<th>${date}</th>`);
+  headerRow.innerHTML += `<th>Present</th><th>Total</th><th>%</th><th></th>`;
+
+  // Build student rows
+  let totalPresent = 0, totalEntries = 0;
+  studentData.sort((a, b) => a.name.localeCompare(b.name));
+  studentData.forEach((student, idx) => {
+        // Replace the row creation section with:
+      const tr = document.createElement("tr");
+      let rowHTML = `
+        <td>${idx + 1}</td>
+        <td>${student.id}</td>
+        <td>${student.name}</td>
+              `;
+
+        dates.forEach(date => {
+          const cell = student.data[date];
+          rowHTML += cell
+            ? `<td class="${cell.statusClass}">${cell.status}</td>`
+            : `<td class="status-absent">❌</td>`;
+        });
+
+     const percent = student.total ? ((student.present / student.total) * 100).toFixed(1) : "0";
+      totalPresent += student.present;
+      totalEntries += student.total;
+
+      rowHTML += `
+        <td class="summary-cell">${student.present}</td>
+        <td class="summary-cell">${student.total}</td>
+        <td class="summary-cell">${percent}%</td>
+        <td><a class="details-btn" href="student-report.html?studentId=${student.id}&classId=${cls}">View</a></td>
+      `;
+
+
+        tr.innerHTML = rowHTML;
+        tableBody.appendChild(tr);
+  });
+
+  const avg = totalEntries ? ((totalPresent / totalEntries) * 100).toFixed(1) : "0";
+  summaryDiv.textContent = `Class Average: ${avg}% attendance`;
+}
+
+// Export Excel function
+window.exportToExcel = () => {
+  const clone = document.getElementById("attendanceTable").cloneNode(true);
+  const fromMonth = document.getElementById("exportFromMonth").value;
+  const toMonth = document.getElementById("exportToMonth").value;
+
+  const isDateInRange = (dateStr) => {
+    const month = dateStr.slice(0, 7);
+    return month >= fromMonth && month <= toMonth;
+  };
+
+  // Replace icons with text
+  clone.querySelectorAll("td,th").forEach(cell => {
+    cell.textContent = cell.textContent
+      .replace("✅", "On Time")
+      .replace("⚠️", "Late")
+      .replace("❌", "Absent");
+  });
+
+  // Get all header cells
+  const headerCells = Array.from(clone.querySelectorAll("thead th"));
+  const dateColumnIndexes = [];
+
+  headerCells.forEach((cell, index) => {
+    const text = cell.textContent.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+      if (!isDateInRange(text)) {
+        dateColumnIndexes.push(index);
+      }
+    }
+  });
+
+  // Remove out-of-range date columns by reverse index (to avoid shifting)
+  clone.querySelectorAll("tr").forEach(row => {
+    dateColumnIndexes.slice().reverse().forEach(index => {
+      if (row.cells[index]) row.deleteCell(index);
+    });
+  });
+
+  const wb = XLSX.utils.table_to_book(clone, { sheet: "Attendance" });
+  XLSX.writeFile(wb, "Filtered_Attendance_Report.xlsx");
+};
+
+// Export PDF function
+window.exportToPDF = () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('landscape');
+  doc.setFontSize(18);
+  doc.setTextColor(33, 150, 243);
+  doc.text("Monthly Attendance Report", 14, 20);
+
+  const fromMonth = document.getElementById("exportFromMonth").value;
+  const toMonth = document.getElementById("exportToMonth").value;
+
+  const isDateInRange = (dateStr) => {
+    const month = dateStr.slice(0, 7);
+    return month >= fromMonth && month <= toMonth;
+  };
+
+  const clone = document.getElementById("attendanceTable").cloneNode(true);
+
+  // Convert icons to text
+  clone.querySelectorAll("td,th").forEach(cell => {
+    cell.textContent = cell.textContent
+      .replace("✅", "On Time")
+      .replace("⚠️", "Late")
+      .replace("❌", "Absent");
+  });
+
+  // Remove "View" column
+  clone.querySelectorAll("tr").forEach(row => row.deleteCell(row.cells.length - 1));
+
+  // Find date columns to remove
+  const headerCells = Array.from(clone.querySelectorAll("thead th"));
+  const dateColumnIndexes = [];
+
+  headerCells.forEach((cell, index) => {
+    const text = cell.textContent.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+      if (!isDateInRange(text)) {
+        dateColumnIndexes.push(index);
+      }
+    }
+  });
+
+  // Remove columns in reverse order
+  clone.querySelectorAll("tr").forEach(row => {
+    dateColumnIndexes.slice().reverse().forEach(index => {
+      if (row.cells[index]) row.deleteCell(index);
+    });
+  });
+
+  doc.autoTable({
+    html: clone,
+    startY: 30,
+    headStyles: {
+      fillColor: [29, 78, 216],
+      textColor: 255,
+      fontSize: 10,
+      halign: 'center'
+    },
+    bodyStyles: {
+      fontSize: 9,
+      textColor: 50
+    },
+    alternateRowStyles: {
+      fillColor: [240, 240, 240]
+    },
+    styles: {
+      overflow: 'linebreak',
+      cellPadding: 2,
+      halign: 'center',
+    }
+  });
+
+  doc.save("Filtered_Attendance_Report.pdf");
+};
+
+let exportType = "";
+
+window.showExportOptions = (type) => {
+  exportType = type;
+  document.getElementById("exportOptions").style.display = "block";
+};
+
+document.getElementById("confirmExport").addEventListener("click", () => {
+  document.getElementById("exportOptions").style.display = "none";
+  if (exportType === "excel") {
+    exportToExcel();
+  } else if (exportType === "pdf") {
+    exportToPDF();
+  }
+});
+
+document.getElementById("excelBtn").addEventListener("click", () => {
+  window.showExportOptions("excel");
+});
+
+document.getElementById("pdfBtn").addEventListener("click", () => {
+  window.showExportOptions("pdf");
+});
+
+</script>
+</body>
+</html>

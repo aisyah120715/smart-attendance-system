@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Dashboard - Smart Attendance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+:root {
+  --primary-dark: #0a1f44;
+  --primary: #1a3a8f;
+  --primary-light: #2a56d4;
+  --secondary: #f39c12;
+  --secondary-hover: #e67e22;
+  --text-light: #f8f9fa;
+  --text-muted: #d1d7e0;
+  --white: #ffffff;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  --border-radius: 12px;
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: var(--text-light);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  background: rgba(10, 31, 68, 0.9);
+  color: var(--white);
+  padding: 1.25rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow);
+  z-index: 100;
+}
+
+.header-left h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  background: linear-gradient(to right, var(--white), #e0e0e0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.5px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#headerName {
+  font-weight: 500;
+  color: var(--secondary);
+  font-size: 1rem;
+}
+
+.dashboard {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(10, 31, 68, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem 1rem;
+  transition: var(--transition);
+  overflow-y: auto;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar ul li {
+  margin-bottom: 0.75rem;
+}
+
+.sidebar ul li a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.sidebar ul li a i {
+  font-size: 1rem;
+  margin-right: 0.75rem;
+  width: 20px;
+  text-align: center;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background: rgba(243, 156, 18, 0.15);
+  color: var(--secondary);
+  transform: translateX(5px);
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background: rgba(10, 31, 68, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Dashboard Home */
+.dashboard-home {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.profile-header img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--secondary);
+  object-fit: cover;
+  box-shadow: var(--shadow);
+}
+
+.profile-header h2 {
+  margin-top: 1rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.profile-header p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  background: rgba(26, 58, 143, 0.25);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 1.75rem;
+  text-align: center;
+  transition: var(--transition);
+  cursor: pointer;
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  background: rgba(26, 58, 143, 0.35);
+  border-color: rgba(243, 156, 18, 0.3);
+}
+
+.card i {
+  font-size: 2.25rem;
+  color: var(--secondary);
+  margin-bottom: 0.75rem;
+}
+
+.card h3 {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Profile Page */
+.profile-form {
+  max-width: 600px;
+  margin: 0 auto;
+  background: rgba(26, 58, 143, 0.25);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.6s ease-out;
+}
+
+.profile-form h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--white);
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius);
+  color: var(--white);
+  font-family: 'Poppins', sans-serif;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--secondary);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition);
+  box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
+  margin-top: 0.5rem;
+}
+
+.btn:hover {
+  background: var(--secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn i {
+  margin-right: 0.5rem;
+}
+
+/* Class Selection */
+.class-selection {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.class-selection h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--white);
+}
+
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.class-card {
+  background: rgba(26, 58, 143, 0.25);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.class-card:hover {
+  transform: translateY(-5px);
+  background: rgba(26, 58, 143, 0.35);
+  box-shadow: var(--shadow);
+  border-color: rgba(243, 156, 18, 0.3);
+}
+
+.class-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 0.25rem;
+}
+
+.class-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Absence Form */
+.absence-form {
+  max-width: 700px;
+  margin: 0 auto;
+  background: rgba(26, 58, 143, 0.25);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.6s ease-out;
+}
+
+.absence-form h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--white);
+  text-align: center;
+}
+
+.absence-form p.subtitle {
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.date-selector {
+  margin-bottom: 1.5rem;
+}
+
+.date-selector select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius);
+  color: var(--white);
+  font-family: 'Poppins', sans-serif;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.date-selector select:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+}
+
+.textarea-group {
+  margin-bottom: 1.5rem;
+}
+
+.textarea-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.textarea-group textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius);
+  color: var(--white);
+  font-family: 'Poppins', sans-serif;
+  transition: var(--transition);
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.textarea-group textarea:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+}
+
+.file-upload {
+  margin-bottom: 1.5rem;
+}
+
+.file-upload label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.file-upload input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius);
+  color: var(--text-light);
+  font-family: 'Poppins', sans-serif;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.file-upload input[type="file"]:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+}
+
+/* Attendance Log */
+.attendance-log {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.attendance-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.attendance-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 0.5rem;
+}
+
+.attendance-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.class-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.class-item {
+  background: rgba(26, 58, 143, 0.25);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-align: center;
+}
+
+.class-item:hover {
+  transform: translateY(-5px);
+  background: rgba(26, 58, 143, 0.35);
+  box-shadow: var(--shadow);
+  border-color: rgba(243, 156, 18, 0.3);
+}
+
+.class-item h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 0.25rem;
+}
+
+.class-item p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Attendance Table */
+.attendance-table {
+  width: 100%;
+  margin-top: 2rem;
+  background: rgba(26, 58, 143, 0.25);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+}
+
+.attendance-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th {
+  background: rgba(243, 156, 18, 0.2);
+  color: var(--secondary);
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.attendance-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+}
+
+.attendance-table tr:last-child td {
+  border-bottom: none;
+}
+
+.attendance-table tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.badge-present {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.badge-late {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.badge-absent {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius);
+  color: var(--text-light);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.back-button i {
+  margin-right: 0.5rem;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--secondary);
+  color: var(--white);
+  padding: 0.9rem 1.5rem;
+  border-radius: var(--border-radius);
+  display: none;
+  font-size: 0.95rem;
+  z-index: 999;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading Spinner */
+#loadingSpinner {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: var(--secondary);
+  z-index: 999;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 220px;
+  }
+  
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    padding: 1rem;
+    order: 2;
+  }
+  
+  .main-content {
+    order: 1;
+  }
+  
+  header {
+    padding: 1rem;
+  }
+  
+  .header-left h1 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .profile-form, 
+  .absence-form {
+    padding: 1.5rem;
+  }
+  
+  .profile-header img {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profile-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .class-grid,
+  .class-list {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <h1>Smart Attendance System</h1>
+      </div>
+      <div class="header-right">
+        <span id="headerName">Student</span>
+      </div>
+    </header>
+    
+    <div class="dashboard">
+      <nav class="sidebar">
+        <ul>
+          <li><a onclick="loadHome()"><i class="fas fa-home"></i> Home</a></li>
+          <li><a onclick="openProfilePage()"><i class="fas fa-user-circle"></i> Profile</a></li>
+          <li><a onclick="loadStudentClasses()"><i class="fas fa-file-upload"></i> Submit Absence</a></li>
+          <li><a onclick="loadAttendanceLog()"><i class="fas fa-calendar-check"></i> Attendance Log</a></li>
+          <li><a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </nav>
+
+      <section class="main-content" id="mainContent">
+        <div id="loadingSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></div>
+      </section>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Submitted Successfully!</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { getDatabase, ref, get, child, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+  authDomain: "login-form-9b836.firebaseapp.com",
+  projectId: "login-form-9b836",
+  storageBucket: "login-form-9b836.appspot.com",
+  messagingSenderId: "878421828817",
+  appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const fs = getFirestore(app);
+const rtdb = getDatabase(app);
+
+let studentUID = "";
+let studentData = {};
+
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 3000);
+}
+
+function showLoading(show = true) {
+  const spinner = document.getElementById('loadingSpinner');
+  if (!spinner) return;
+  spinner.style.display = show ? 'block' : 'none';
+}
+
+// --- Load Home Page ---
+window.loadHome = async () => {
+  showLoading(true);
+  const container = document.getElementById("mainContent");
+
+  // Get the student's name in real-time
+  const dbRef = ref(rtdb);
+  let studentNameRealtime = '';
+  try {
+    const classSnap = await get(child(dbRef, 'class_schedules'));
+    if (classSnap.exists()) {
+      const classes = classSnap.val();
+      for (const classId in classes) {
+        const classGroup = classes[classId].class || {};
+        for (const classKey in classGroup) {
+          const students = classGroup[classKey].students || {};
+          if (students && students[studentData.username]) {
+            studentNameRealtime = students[studentData.username].name;
+            break;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("Failed to load student name.");
+  }
+
+  // Retrieve profile picture
+  let imageUrl = 'images/default-avatar.png';
+  try {
+    const storage = getStorage(app, 'gs://login-form-9b836.firebasestorage.app'); 
+    const imgRef = storageRef(storage, `profile_pics/${studentData.username}.jpg`);
+    imageUrl = await getDownloadURL(imgRef);
+  } catch (err) {
+    console.warn("Profile image error:", err.code, err.message);
+  }
+
+  // Display dashboard
+  container.innerHTML = `
+    <div class="dashboard-home">
+      <div class="profile-header" id="profileHeader">
+        <h2>${studentNameRealtime || 'Unknown Name'}</h2>
+        <p>${studentData.username || ''}</p>
+      </div>
+
+      <div class="cards">
+        <div class="card" onclick="openProfilePage()">
+          <i class="fas fa-user-edit"></i>
+          <h3>Edit Profile</h3>
+          <p>Update your personal information</p>
+        </div>
+        <div class="card" onclick="loadStudentClasses()">
+          <i class="fas fa-file-upload"></i>
+          <h3>Submit Absence</h3>
+          <p>Request absence for missed classes</p>
+        </div>
+        <div class="card" onclick="loadAttendanceLog()">
+          <i class="fas fa-calendar-check"></i>
+          <h3>Attendance Log</h3>
+          <p>View your attendance records</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const img = document.createElement("img");
+  img.src = imageUrl;
+  img.alt = "Profile Picture";
+  img.style.width = "120px";
+  img.style.height = "120px";
+  img.style.borderRadius = "50%";
+  img.style.border = "3px solid var(--secondary)";
+  img.style.objectFit = "cover";
+  document.getElementById("profileHeader").prepend(img);
+
+  showLoading(false);
+};
+window.loadHome = loadHome; 
+
+// --- Profile Page ---
+window.openProfilePage = () => {
+  showLoading(false);
+  const container = document.getElementById("mainContent");
+  container.innerHTML = `
+    <div class="profile-form">
+      <h2>Edit Profile</h2>
+      
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" class="form-control" value="${studentData.firstName || ''}">
+      </div>
+      
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" class="form-control" value="${studentData.lastName || ''}">
+      </div>
+      
+      <button onclick="saveProfile()" class="btn btn-block">
+        <i class="fas fa-save"></i> Save Changes
+      </button>
+    </div>
+  `;
+};
+
+window.saveProfile = async () => {
+  const newFirst = document.getElementById('firstName').value.trim();
+  const newLast = document.getElementById('lastName').value.trim();
+  if (!newFirst || !newLast) {
+    showToast("Fields cannot be empty!");
+    return;
+  }
+  await updateDoc(doc(fs, "users", studentUID), {
+    firstName: newFirst,
+    lastName: newLast
+  });
+  showToast("Profile updated successfully!");
+  studentData.firstName = newFirst;
+  studentData.lastName = newLast;
+  document.getElementById("headerName").textContent = `${newFirst} ${newLast}`;
+  loadHome();
+};
+
+// --- Load Classes for Submit Absence ---
+window.loadStudentClasses = async () => {
+  showLoading(true);
+  const container = document.getElementById("mainContent");
+  container.innerHTML = `
+    <div class="class-selection">
+      <h2>Submit Absence</h2>
+      <p>Select a class to submit absence request</p>
+      <div id="classList" class="class-grid"></div>
+    </div>
+  `;
+
+  const dbRef = ref(rtdb);
+  try {
+    const snapshot = await get(child(dbRef, `class_schedules`));
+    const classList = document.getElementById("classList");
+    if (snapshot.exists()) {
+      const schedules = snapshot.val();
+      let found = false;
+      for (const classId in schedules) {
+        const classGroup = schedules[classId].class || {};
+        for (const classKey in classGroup) {
+          const classData = classGroup[classKey];
+          const students = classData.students || {};
+          if (students && Object.prototype.hasOwnProperty.call(students, studentData.username)) {
+            found = true;
+            const className = classData.class_name || "Unnamed";
+            const lecturerUsername = classData.lecturer_username || "";
+
+            const card = document.createElement("div");
+            card.className = "class-card";
+            card.innerHTML = `
+              <h3>${classId}</h3>
+              <p>${className}</p>
+            `;
+            card.onclick = () => openAbsenceForm(`${classId}/class/${classKey}`, className, lecturerUsername);
+            classList.appendChild(card);
+          }
+        }
+      }
+      if (!found) classList.innerHTML = "<p style='text-align:center;color:var(--text-muted);'>No classes assigned.</p>";
+    } else {
+      classList.innerHTML = "<p style='text-align:center;color:var(--text-muted);'>No class schedules found.</p>";
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("Failed to load classes.");
+  }
+  showLoading(false);
+};
+
+// --- Open Absence Form ---
+window.openAbsenceForm = async (classId, className, lecturerUsername) => {
+  showLoading(true);
+  const container = document.getElementById("mainContent");
+
+  try {
+    const [cid, , ckey] = classId.split("/");
+    const dbRef = ref(rtdb, `attendance/${cid}/class/${ckey}/${studentData.username}`);
+
+    const snapshot = await get(dbRef);
+
+    if (!snapshot.exists()) {
+      container.innerHTML = `
+        <div class="class-selection">
+          <div class="card">
+            <h2>No attendance dates found for this class</h2>
+            <button onclick="loadStudentClasses()" class="back-button">
+              <i class="fas fa-arrow-left"></i> Back to Classes
+            </button>
+          </div>
+        </div>
+      `;
+      showLoading(false);
+      return;
+    }
+
+    const attendanceDates = Object.keys(snapshot.val()).sort((a, b) => new Date(a.split('_')[0]) - new Date(b.split('_')[0]));
+
+    container.innerHTML = `
+      <div class="absence-form">
+        <h2>Submit Absence for ${className}</h2>
+        <p class="subtitle">Select the date you were absent</p>
+        
+        <div class="date-selector">
+          <select id="absenceDateSelect" class="form-control">
+            <option value="">-- Select Date --</option>
+            ${attendanceDates.map(d => `<option value="${d}">${d.replaceAll('_', ' ')}</option>`).join('')}
+          </select>
+        </div>
+        
+        <button onclick="showAbsenceForm('${classId}', '${className}', '${lecturerUsername}')" class="btn btn-block">
+          <i class="fas fa-arrow-right"></i> Proceed to Form
+        </button>
+        
+        <button onclick="loadStudentClasses()" class="back-button">
+          <i class="fas fa-arrow-left"></i> Back to Classes
+        </button>
+      </div>
+    `;
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `
+      <div class="class-selection">
+        <div class="card">
+          <h2>Error loading attendance dates</h2>
+          <button onclick="loadStudentClasses()" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Classes
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  showLoading(false);
+};
+
+window.showAbsenceForm = (classId, className, lecturerUsername) => {
+  const selectedDate = document.getElementById("absenceDateSelect").value;
+  if (!selectedDate) {
+    showToast("Please select a date first.");
+    return;
+  }
+
+  const container = document.getElementById("mainContent");
+  container.innerHTML = `
+    <div class="absence-form">
+      <h2>Submit Absence for ${className}</h2>
+      <p class="subtitle">Date: ${selectedDate.replaceAll('_', ' ')}</p>
+      
+      <div class="textarea-group">
+        <label for="reasonField">Reason for Absence</label>
+        <textarea id="reasonField" class="form-control" placeholder="Please explain your absence..."></textarea>
+      </div>
+      
+      <div class="file-upload">
+        <label for="proofFile">Upload Proof (PDF Only)</label>
+        <input type="file" id="proofFile" accept="application/pdf">
+      </div>
+      
+      <button onclick="submitAbsenceWithUpload('${classId}', '${className}', '${lecturerUsername}', '${selectedDate}')" class="btn btn-block">
+        <i class="fas fa-paper-plane"></i> Submit Absence Request
+      </button>
+      
+      <button onclick="openAbsenceForm('${classId}', '${className}', '${lecturerUsername}')" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Date Selection
+      </button>
+    </div>
+  `;
+};
+
+// --- Submit Absence Logic ---
+window.submitAbsenceWithUpload = async (classId, className, lecturerUsername, selectedDate) => {
+  const reason = document.getElementById('reasonField').value.trim();
+  const fileInput = document.getElementById('proofFile');
+  const file = fileInput.files[0];
+
+  // Validate inputs
+  if (!reason) {
+    showToast("Please provide a reason for your absence.");
+    return;
+  }
+  
+  if (!file) {
+    showToast("Please upload supporting documentation.");
+    return;
+  }
+
+  // Validate file type and size
+  if (file.type !== "application/pdf") {
+    showToast("Only PDF files are accepted as proof.");
+    return;
+  }
+  
+  if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    showToast("File size exceeds 5MB limit.");
+    return;
+  }
+
+  showLoading(true);
+  
+  try {
+    // Show progress indicator
+    const container = document.getElementById("mainContent");
+    container.innerHTML = `
+      <div class="card" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+        <h3>Uploading your absence request...</h3>
+        <p>Please wait while we process your submission</p>
+      </div>
+    `;
+
+    // Upload file to storage
+    const filePath = `absence_proofs/${studentData.username}_${classId.replace(/\//g, '-')}_${selectedDate}.pdf`;
+    const storage = getStorage(app, 'gs://login-form-9b836.appspot.com');
+    const storageRefPath = storageRef(storage, filePath);
+    
+    const uploadTask = await uploadBytes(storageRefPath, file);
+    const fileURL = await getDownloadURL(uploadTask.ref);
+
+    // Prepare absence data
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    const formattedTime = today.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    const key = `${studentData.username}_${selectedDate}`;
+    const absenceRequest = {
+      studentId: studentData.username,
+      studentName: `${studentData.firstName} ${studentData.lastName}`,
+      classId,
+      className,
+      date: selectedDate,
+      lecturerUsername,
+      reason,
+      proofLink: fileURL,
+      submittedAt: `${formattedDate} ${formattedTime}`,
+      status: "Pending",
+      lastUpdated: today.getTime()
+    };
+
+    // Save to database
+    await set(ref(rtdb, `absence_requests/${lecturerUsername}/${key}`), absenceRequest);
+    
+    // Send notification to lecturer
+    await set(ref(rtdb, `notifications/${lecturerUsername}/${today.getTime()}`), {
+      type: "absence_request",
+      message: `New absence request from ${studentData.firstName} ${studentData.lastName}`,
+      classId,
+      date: selectedDate,
+      read: false,
+      timestamp: today.getTime()
+    });
+
+    // Show success message
+    container.innerHTML = `
+      <div class="card" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-check-circle" style="font-size: 3rem; color: #10b981; margin-bottom: 1rem;"></i>
+        <h3>Absence Submitted Successfully!</h3>
+        <p>Your absence request for ${selectedDate.replaceAll('_', ' ')} has been submitted.</p>
+        <p>The lecturer will review your request shortly.</p>
+        <button onclick="loadHome()" class="btn" style="margin-top: 1.5rem;">
+          <i class="fas fa-home"></i> Return to Dashboard
+        </button>
+      </div>
+    `;
+    
+    showToast("Absence request submitted successfully!");
+  } catch (err) {
+    console.error("Absence submission error:", err);
+    
+    container.innerHTML = `
+      <div class="card" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-times-circle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+        <h3>Submission Failed</h3>
+        <p>We encountered an error while processing your request.</p>
+        <p>Please try again later or contact support.</p>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+          <button onclick="showAbsenceForm('${classId}', '${className}', '${lecturerUsername}')" class="btn">
+            <i class="fas fa-arrow-left"></i> Try Again
+          </button>
+          <button onclick="loadHome()" class="btn">
+            <i class="fas fa-home"></i> Dashboard
+          </button>
+        </div>
+      </div>
+    `;
+    
+    showToast("Submission failed. Please try again.");
+  } finally {
+    showLoading(false);
+  }
+};
+
+// --- Attendance Log ---
+window.loadAttendanceLog = async () => {
+  showLoading(true);
+  const container = document.getElementById("mainContent");
+  container.innerHTML = `
+    <div class="card" style="
+      background: linear-gradient(135deg, #74ebd5, #acb6e5);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto 30px auto;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    ">
+      <h2 style="margin-bottom:10px;">🎓 Select Your Class</h2>
+      <p style="font-size:16px;">Click your class to view detailed attendance</p>
+    </div>
+
+    <div id="classList" style="
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    "></div>
+  `;
+
+  const dbRef = ref(rtdb);
+  try {
+    const snapshot = await get(child(dbRef, 'class_schedules'));
+    const classList = document.getElementById("classList");
+
+    if (snapshot.exists()) {
+      const schedules = snapshot.val();
+      let found = false;
+
+    for (const classId in schedules) {
+      const classGroup = schedules[classId].class || {};
+      for (const classKey in classGroup) {
+        const classData = classGroup[classKey];
+        const students = classData.students || {};
+        if (students && Object.prototype.hasOwnProperty.call(students, studentData.username)) {
+          found = true;
+          const className = classData.class_name || `${classId} ${classKey}`;
+
+          const card = document.createElement("div");
+          card.style = `
+            background: white;
+            padding: 30px 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1000px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin: 10px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeSlideUp 0.5s ease forwards; /* 🎬 Smooth appearing */
+          `;
+
+          card.innerHTML = `
+            <h3 style="color: #2c3e50; margin-bottom: 10px;">${className}</h3>
+            <p style="font-size: 14px; color: #7f8c8d;">Click to view attendance</p>
+          `;
+           card.onclick = () => loadAttendanceForClass(`${classId}/class/${classKey}`, className);
+          card.onmouseover = () => {
+            card.style.transform = "scale(1.02)";
+            card.style.boxShadow = "0 10px 20px rgba(0,0,0,0.2)";
+          };
+          card.onmouseout = () => {
+            card.style.transform = "scale(1)";
+            card.style.boxShadow = "0 4px 15px rgba(0,0,0,0.1)";
+          };
+          classList.appendChild(card);
+        }
+      }
+      }
+      if (!found) classList.innerHTML = "<p style='text-align:center;'>No classes found for you.</p>";
+    } else {
+      classList.innerHTML = "<p style='text-align:center;'>No class schedules available.</p>";
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("Failed to load classes.");
+  }
+  showLoading(false);
+};
+
+const styleSheet = document.createElement("style");
+styleSheet.innerHTML = `
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+`;
+document.head.appendChild(styleSheet);
+
+
+window.loadAttendanceForClass = async (classId, className) => {
+  showLoading(true);
+  const container = document.getElementById("mainContent");
+  
+  // Create a more engaging header with statistics
+  container.innerHTML = `
+    <div style="max-width: 1000px; margin: 0 auto;">
+      <div style="
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+      ">
+        <h2 style="margin-bottom: 0.5rem;">${className} Attendance</h2>
+        <div style="display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;">
+          <div id="totalClasses" style="
+            background: rgba(255,255,255,0.15);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            min-width: 120px;
+          ">
+            <div style="font-size: 0.85rem; opacity: 0.8;">Total Classes</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">0</div>
+          </div>
+          <div id="presentCount" style="
+            background: rgba(255,255,255,0.15);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            min-width: 120px;
+          ">
+            <div style="font-size: 0.85rem; opacity: 0.8;">Present</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">0</div>
+          </div>
+          <div id="attendanceRate" style="
+            background: rgba(255,255,255,0.15);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            min-width: 120px;
+          ">
+            <div style="font-size: 0.85rem; opacity: 0.8;">Attendance Rate</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">0%</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        overflow: hidden;
+      ">
+        <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="color: #1e293b; margin: 0;">Attendance Records</h3>
+            <div style="display: flex; gap: 0.5rem;">
+              <button id="exportBtn" style="
+                background: #e0e7ff;
+                color: #3b82f6;
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                font-size: 0.85rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              ">
+                <i class="fas fa-download"></i> Export
+              </button>
+              <button onclick="loadAttendanceLog()" style="
+                background: #f1f5f9;
+                color: #64748b;
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                font-size: 0.85rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              ">
+                <i class="fas fa-arrow-left"></i> Back
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="attendanceList" style="overflow-x: auto;"></div>
+      </div>
+    </div>
+  `;
+
+  try {
+    const [cid, , ckey] = classId.split("/");
+    const attendanceRef = ref(rtdb, `attendance/${cid}/class/${ckey}/${studentData.username}`);
+    const absenceRef = ref(rtdb, `absence_requests`);
+
+    // Get both attendance and absence data
+    const [attendanceSnap, absenceSnap] = await Promise.all([
+      get(attendanceRef),
+      get(absenceRef)
+    ]);
+
+    let attendanceData = {};
+    if (attendanceSnap.exists()) {
+      attendanceData = attendanceSnap.val();
+    }
+
+    // Find approved absence requests for this class
+    let approvedAbsences = [];
+    if (absenceSnap.exists()) {
+      const allAbsences = absenceSnap.val();
+      for (const lecturerId in allAbsences) {
+        for (const absenceKey in allAbsences[lecturerId]) {
+          const absence = allAbsences[lecturerId][absenceKey];
+          if (absence.studentId === studentData.username && 
+              absence.classId === classId && 
+              absence.status === "Approved") {
+            approvedAbsences.push(absence.date);
+          }
+        }
+      }
+    }
+
+    const sortedDates = Object.keys(attendanceData).sort((a, b) => 
+      new Date(b.split('_')[0]) - new Date(a.split('_')[0])
+    );
+
+    // Calculate statistics
+    let presentCount = 0;
+    let totalCount = sortedDates.length;
+    let attendanceRate = 0;
+
+    if (totalCount > 0) {
+      presentCount = sortedDates.filter(date => {
+        const record = attendanceData[date];
+        return record.status && 
+              (record.status.toLowerCase().includes("on time") || 
+               record.status.toLowerCase().includes("late"));
+      }).length;
+      
+      // Count approved absences as present
+      presentCount += approvedAbsences.length;
+      totalCount += approvedAbsences.length;
+      
+      attendanceRate = Math.round((presentCount / totalCount) * 100);
+    }
+
+    // Update statistics display
+    document.getElementById('totalClasses').lastElementChild.textContent = totalCount;
+    document.getElementById('presentCount').lastElementChild.textContent = presentCount;
+    document.getElementById('attendanceRate').lastElementChild.textContent = `${attendanceRate}%`;
+
+    // Generate attendance table
+    let html = `
+      <table style="width:100%; border-collapse:collapse; min-width: 600px;">
+        <thead style="background:#f8fafc; color:#64748b; font-size:0.85rem;">
+          <tr>
+            <th style="padding:12px; text-align:left; width:50px;">No</th>
+            <th style="padding:12px; text-align:left;">Date</th>
+            <th style="padding:12px; text-align:center;">Status</th>
+            <th style="padding:12px; text-align:center;">Time</th>
+            <th style="padding:12px; text-align:center;">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    // Add approved absences first
+    approvedAbsences.forEach((date, index) => {
+      html += `
+        <tr style="border-bottom:1px solid #f1f5f9; color:#1e293b;">
+          <td style="padding:12px; text-align:left;">${index + 1}</td>
+          <td style="padding:12px; text-align:left;">${date.replaceAll('_', ' ')}</td>
+          <td style="padding:12px; text-align:center;">
+            <span style="
+              background:#10b981;
+              padding:4px 12px;
+              border-radius:30px;
+              color:white;
+              font-weight:500;
+              font-size:0.8rem;
+            ">Approved Absence</span>
+          </td>
+          <td style="padding:12px; text-align:center;">-</td>
+          <td style="padding:12px; text-align:center;">
+            <i class="fas fa-check-circle" style="color:#10b981;"></i>
+          </td>
+        </tr>
+      `;
+    });
+
+    // Add regular attendance records
+    sortedDates.forEach((dateKey, index) => {
+      const record = attendanceData[dateKey];
+      const status = record.status || 'Unknown';
+      const timestamp = record.timestamp || '';
+      
+      let badgeColor = "#10b981"; // On Time (Green)
+      if (status.toLowerCase().includes("late")) badgeColor = "#f59e0b"; // Yellow
+      if (status.toLowerCase().includes("absent")) badgeColor = "#ef4444"; // Red
+
+      html += `
+        <tr style="border-bottom:1px solid #f1f5f9; color:#1e293b;">
+          <td style="padding:12px; text-align:left;">${approvedAbsences.length + index + 1}</td>
+          <td style="padding:12px; text-align:left;">${dateKey.replaceAll('_', ' ')}</td>
+          <td style="padding:12px; text-align:center;">
+            <span style="
+              background:${badgeColor};
+              padding:4px 12px;
+              border-radius:30px;
+              color:white;
+              font-weight:500;
+              font-size:0.8rem;
+            ">${status}</span>
+          </td>
+          <td style="padding:12px; text-align:center;">${timestamp ? formatTime(timestamp) : '-'}</td>
+          <td style="padding:12px; text-align:center;">-</td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+    document.getElementById('attendanceList').innerHTML = html;
+
+    // Add export functionality
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      exportAttendanceToCSV(sortedDates, attendanceData, approvedAbsences, className);
+    });
+
+    // Show warning if attendance is low
+    if (attendanceRate < 80 && totalCount > 0) {
+      const warning = document.createElement('div');
+      warning.style = `
+        background: #fffbeb;
+        color: #92400e;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-left: 4px solid #f59e0b;
+      `;
+      warning.innerHTML = `
+        <i class="fas fa-exclamation-triangle" style="font-size: 1.25rem;"></i>
+        <div>
+          <strong>Warning:</strong> Your attendance rate is below 80%. 
+          Please ensure to attend all classes or submit absence requests when necessary.
+        </div>
+      `;
+      container.querySelector('#attendanceList').after(warning);
+    }
+
+  } catch (error) {
+    console.error("Error loading attendance:", error);
+    document.getElementById('attendanceList').innerHTML = `
+      <div style="padding: 2rem; text-align: center; color: #64748b;">
+        <i class="fas fa-exclamation-circle" style="font-size: 2rem; color: #ef4444; margin-bottom: 1rem;"></i>
+        <h3>Error Loading Attendance Data</h3>
+        <p>We couldn't load your attendance records. Please try again later.</p>
+      </div>
+    `;
+  } finally {
+    showLoading(false);
+  }
+};
+
+function exportAttendanceToCSV(dates, attendanceData, approvedAbsences, className) {
+  let csvContent = "data:text/csv;charset=utf-8,";
+  
+  // Add header
+  csvContent += "No,Date,Status,Time,Notes\n";
+  
+  // Add approved absences
+  approvedAbsences.forEach((date, index) => {
+    csvContent += `${index + 1},${date.replaceAll('_', ' ')},Approved Absence,,\n`;
+  });
+  
+  // Add regular attendance
+  dates.forEach((dateKey, index) => {
+    const record = attendanceData[dateKey];
+    const status = record.status || 'Unknown';
+    const timestamp = record.timestamp ? formatTime(record.timestamp) : '';
+    
+    csvContent += `${approvedAbsences.length + index + 1},${dateKey.replaceAll('_', ' ')},${status},${timestamp},\n`;
+  });
+  
+  // Create download link
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `${className.replace(/[^a-z0-9]/gi, '_')}_attendance.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showToast("Attendance exported successfully!");
+}
+
+function formatTime(timestamp) {
+  try {
+    const date = new Date(timestamp);
+    let hours = date.getHours();
+    const minutes = ('0' + date.getMinutes()).slice(-2);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return `${hours}:${minutes} ${ampm}`;
+  } catch (err) {
+    return timestamp; 
+  }
+}
+
+window.logout = () => {
+  Swal.fire({
+    title: 'Are you sure you want to logout?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, logout',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      signOut(auth)
+        .then(() => {
+          Swal.fire({
+            title: 'Logged Out!',
+            text: 'You have been successfully logged out.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false,
+            didOpen: () => {
+              // While the popup is open, disable background interaction
+              Swal.showLoading();
+            }
+          });
+          // Delay the redirect manually after 1.5 seconds
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1500);
+        })
+        .catch((error) => {
+          console.error('Logout error:', error);
+          Swal.fire({
+            title: 'Error!',
+            text: 'Logout failed. Please try again.',
+            icon: 'error'
+          });
+        });
+    }
+  });
+};
+
+
+// --- On Auth State Changed ---
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    studentUID = user.uid;
+    const docSnap = await getDoc(doc(fs, "users", user.uid));
+    if (docSnap.exists()) {
+      studentData = docSnap.data();
+
+      
+      document.getElementById("headerName").textContent = `${studentData.firstName} ${studentData.lastName}`;
+
+      loadHome();
+    }
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+</script>
+
+</body>
+</html>

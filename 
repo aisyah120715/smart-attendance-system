@@ -1,0 +1,20 @@
+Update layout in absence-request.html
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main
+# Your branch is up to date with 'origin/main'.
+#
+# Changes to be committed:
+#	modified:   absence-requests.html
+#	modified:   attendance-logs.html
+#	modified:   class-list.html
+#	modified:   class-schedule.html
+#	modified:   dashboard_admin.html
+#	modified:   dashboard_lecturer.html
+#	modified:   dashboard_student.html
+#	modified:   functions/index.js
+#	modified:   monthly-report.html
+#	modified:   student-report.html
+#	modified:   warning-center.html
+

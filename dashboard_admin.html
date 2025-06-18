@@ -14,19 +14,17 @@
   <!-- Main Styles -->
   <style>
     :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --secondary: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --dark-bg: linear-gradient(135deg, #0f172a, #1e293b);
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --text-light: #f8fafc;
-      --text-muted: #94a3b8;
-      --highlight: #e2e8f0;
-      --spacing-unit: 1rem;
+      --primary-dark: #0a1f44;
+      --primary: #1a3a8f;
+      --primary-light: #2a56d4;
+      --secondary: #f39c12;
+      --secondary-hover: #e67e22;
+      --text-light: #f8f9fa;
+      --text-muted: #d1d7e0;
+      --white: #ffffff;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
       --border-radius: 12px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
     * { 
@@ -37,243 +35,309 @@
     
     body {
       font-family: 'Poppins', sans-serif;
-      background: var(--dark-bg);
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: var(--text-light);
-      display: flex;
       min-height: 100vh;
       line-height: 1.6;
     }
-    
-    /* Sidebar Styles */
-    aside {
-      width: 280px;
-      background: rgba(15, 23, 42, 0.8);
-      padding: calc(var(--spacing-unit) * 1.5);
-      min-height: 100vh;
-      transition: var(--transition);
-      backdrop-filter: blur(10px);
-      border-right: 1px solid rgba(255,255,255,0.1);
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
     
-    aside h2 {
-      font-size: 1.5rem;
+    header {
+      background: rgba(10, 31, 68, 0.9);
+      color: var(--white);
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .header-left h1 {
+      font-size: 1.6rem;
       font-weight: 600;
-      margin-bottom: calc(var(--spacing-unit) * 2);
-      padding-bottom: var(--spacing-unit);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      color: var(--highlight);
+      background: linear-gradient(to right, var(--white), #e0e0e0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
       letter-spacing: 0.5px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #headerName {
+      font-weight: 500;
+      color: var(--secondary);
+      font-size: 1rem;
+    }
+    
+    .dashboard {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    /* Sidebar Styles */
+    .sidebar {
+      width: 260px;
+      background: rgba(10, 31, 68, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.5rem 1rem;
+      transition: var(--transition);
+      overflow-y: auto;
+    }
+    
+    .sidebar h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-light);
       display: flex;
       align-items: center;
     }
     
-    aside h2 i {
-      margin-right: var(--spacing-unit);
-      color: var(--primary);
+    .sidebar h2 i {
+      margin-right: 0.75rem;
+      color: var(--secondary);
     }
     
-    aside ul { 
+    .sidebar ul { 
       list-style: none; 
     }
     
-    aside ul li { 
-      margin: calc(var(--spacing-unit) * 0.75) 0; 
+    .sidebar ul li { 
+      margin-bottom: 0.75rem;
     }
     
-    aside ul li a {
+    .sidebar ul li a {
       color: var(--text-muted);
       text-decoration: none;
-      font-weight: 500;
+      font-size: 0.95rem;
       display: flex;
       align-items: center;
-      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+      padding: 0.75rem 1rem;
       border-radius: var(--border-radius);
       transition: var(--transition);
-      font-size: 0.95rem;
     }
     
-    aside ul li a:hover {
-      background: rgba(99, 102, 241, 0.1);
-      color: var(--highlight);
+    .sidebar ul li a i {
+      font-size: 1rem;
+      margin-right: 0.75rem;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: rgba(243, 156, 18, 0.15);
+      color: var(--secondary);
       transform: translateX(5px);
     }
     
-    aside ul li a i {
-      margin-right: var(--spacing-unit);
-      width: 24px;
-      text-align: center;
-      font-size: 1.1rem;
-      color: var(--primary);
+    .sidebar ul li a.logout {
+      color: #ef4444;
     }
     
-    aside ul li a.active {
-      background: rgba(99, 102, 241, 0.2);
-      color: var(--highlight);
-    }
-    
-    aside ul li a.logout {
-      color: var(--danger);
-    }
-    
-    aside ul li a.logout:hover {
-      background: rgba(239, 68, 68, 0.1);
+    .sidebar ul li a.logout:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
     }
     
     /* Main Content Styles */
-    main {
+    .main-content {
       flex: 1;
-      padding: calc(var(--spacing-unit) * 2);
-      overflow-x: hidden;
+      padding: 2rem;
+      overflow-y: auto;
+      background: rgba(10, 31, 68, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
-    
+
     /* Header Styles */
-    .header {
-      background: rgba(30, 41, 59, 0.6);
-      padding: calc(var(--spacing-unit) * 1.5);
+    .content-header {
+      background: rgba(26, 58, 143, 0.25);
+      padding: 1.75rem;
       border-radius: var(--border-radius);
-      margin-bottom: calc(var(--spacing-unit) * 2);
-      backdrop-filter: blur(10px);
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
       border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       transition: var(--transition);
     }
     
-    .header:hover {
-      border-color: rgba(99, 102, 241, 0.3);
+    .content-header:hover {
+      border-color: rgba(243, 156, 18, 0.3);
     }
     
-    .header h1 {
-      font-size: 1.75rem;
+    .content-header h1 {
+      font-size: 1.5rem;
       font-weight: 600;
-      margin-bottom: calc(var(--spacing-unit) * 0.5);
-      color: var(--highlight);
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
     }
     
-    .header p {
-      font-size: 1rem;
+    .content-header p {
+      font-size: 0.95rem;
       color: var(--text-muted);
-      font-weight: 400;
     }
     
     /* Button Group Styles */
     .btn-group {
-      margin-bottom: calc(var(--spacing-unit) * 2);
+      margin-bottom: 1.5rem;
       display: flex;
       flex-wrap: wrap;
-      gap: var(--spacing-unit);
+      gap: 1rem;
     }
     
-    .btn-group button {
-      padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      font-weight: 500;
-      transition: var(--transition);
-      font-size: 0.9rem;
-      display: flex;
+    .btn {
+      display: inline-flex;
       align-items: center;
-      backdrop-filter: blur(10px);
+      justify-content: center;
+      padding: 0.75rem 1.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--secondary);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
     }
     
-    .btn-group button:hover {
-      background: var(--primary-dark);
+    .btn:hover {
+      background: var(--secondary-hover);
       transform: translateY(-2px);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
     }
     
-    .btn-group button i {
-      margin-right: calc(var(--spacing-unit) * 0.5);
+    .btn i {
+      margin-right: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary-light);
+      box-shadow: 0 4px 8px rgba(42, 86, 212, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary);
+      box-shadow: 0 6px 12px rgba(42, 86, 212, 0.3);
     }
     
     /* Card Styles */
-    .grid-3 {
+    .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: var(--spacing-unit);
-      margin-bottom: calc(var(--spacing-unit) * 2);
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
     }
     
     .card {
-      background: var(--card-bg);
+      background: rgba(26, 58, 143, 0.25);
       border-radius: var(--border-radius);
-      padding: calc(var(--spacing-unit) * 1.5);
+      box-shadow: var(--shadow);
+      padding: 1.75rem;
+      text-align: center;
       transition: var(--transition);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      color: var(--text-light);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
     }
     
     .card:hover {
       transform: translateY(-5px);
-      border-color: rgba(99, 102, 241, 0.3);
-      box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      background: rgba(26, 58, 143, 0.35);
+      border-color: rgba(243, 156, 18, 0.3);
+    }
+    
+    .card i {
+      font-size: 2.25rem;
+      color: var(--secondary);
+      margin-bottom: 0.75rem;
     }
     
     .card h3 {
-      font-size: 1.1rem;
-      margin-bottom: var(--spacing-unit);
-      color: var(--text-muted);
+      font-size: 1.2rem;
       font-weight: 500;
-      display: flex;
-      align-items: center;
-    }
-    
-    .card h3 i {
-      margin-right: calc(var(--spacing-unit) * 0.5);
-      color: var(--primary);
+      margin-bottom: 0.25rem;
     }
     
     .card p {
-      font-size: 2rem;
-      font-weight: 600;
-      color: var(--highlight);
-      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
     }
     
     /* Table Styles */
     .table-container {
-      background: var(--card-bg);
+      background: rgba(26, 58, 143, 0.25);
       border-radius: var(--border-radius);
-      padding: var(--spacing-unit);
-      backdrop-filter: blur(10px);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
       border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       overflow-x: auto;
     }
     
     table {
       width: 100%;
-      margin-top: var(--spacing-unit);
-      border-collapse: separate;
-      border-spacing: 0;
-      min-width: 800px;
+      margin-top: 1rem;
+      border-collapse: collapse;
     }
     
     table th {
-      background: rgba(99, 102, 241, 0.2);
-      color: var(--highlight);
-      font-weight: 500;
-      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+      background: rgba(243, 156, 18, 0.2);
+      color: var(--secondary);
+      font-weight: 600;
+      padding: 1rem;
       text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.9rem;
     }
     
     table td {
-      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.9rem;
     }
     
     table tr:last-child td {
       border-bottom: none;
     }
     
-    table tbody tr:hover td {
-      background: rgba(99, 102, 241, 0.05);
+    table tr:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
     
     table button {
-      padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 0.75);
-      border-radius: calc(var(--border-radius) * 0.7);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
       font-size: 0.85rem;
       font-weight: 500;
       transition: var(--transition);
@@ -284,12 +348,12 @@
     }
     
     table button i {
-      margin-right: calc(var(--spacing-unit) * 0.3);
+      margin-right: 0.5rem;
     }
     
     table button.edit-btn {
       background: rgba(245, 158, 11, 0.1);
-      color: var(--warning);
+      color: #f59e0b;
       border: 1px solid rgba(245, 158, 11, 0.2);
     }
     
@@ -299,9 +363,9 @@
     
     table button.delete-btn {
       background: rgba(239, 68, 68, 0.1);
-      color: var(--danger);
+      color: #ef4444;
       border: 1px solid rgba(239, 68, 68, 0.2);
-      margin-left: calc(var(--spacing-unit) * 0.5);
+      margin-left: 0.5rem;
     }
     
     table button.delete-btn:hover {
@@ -323,36 +387,37 @@
     }
     
     .modal-content {
-      background: var(--card-bg);
+      background: rgba(26, 58, 143, 0.3);
       margin: 5% auto;
-      padding: calc(var(--spacing-unit) * 2);
+      padding: 2rem;
       width: 500px;
       max-width: 90%;
       border-radius: var(--border-radius);
       position: relative;
       animation: slideIn 0.4s ease-out;
       border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
     }
     
     .modal h2 {
       font-size: 1.5rem;
-      margin-bottom: calc(var(--spacing-unit) * 1.5);
-      color: var(--highlight);
+      margin-bottom: 1.5rem;
+      color: var(--text-light);
       font-weight: 600;
       display: flex;
       align-items: center;
     }
     
     .modal h2 i {
-      margin-right: var(--spacing-unit);
-      color: var(--primary);
+      margin-right: 0.75rem;
+      color: var(--secondary);
     }
     
     .close {
       position: absolute;
-      top: calc(var(--spacing-unit) * 1.5);
-      right: calc(var(--spacing-unit) * 1.5);
+      top: 1.5rem;
+      right: 1.5rem;
       font-size: 1.5rem;
       color: var(--text-muted);
       cursor: pointer;
@@ -360,45 +425,53 @@
     }
     
     .close:hover {
-      color: var(--highlight);
+      color: var(--secondary);
       transform: rotate(90deg);
     }
     
     /* Form Styles */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
     form label {
       display: block;
-      margin-top: var(--spacing-unit);
+      margin-bottom: 0.5rem;
       font-weight: 500;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      margin-bottom: calc(var(--spacing-unit) * 0.5);
+      color: var(--text-light);
+      font-size: 0.9rem;
     }
     
-    form input, form select {
+    form input, 
+    form select,
+    form textarea {
       width: 100%;
-      padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
-      border-radius: calc(var(--border-radius) * 0.7);
-      border: 1px solid rgba(255,255,255,0.1);
-      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--border-radius);
+      color: var(--white);
+      font-family: 'Poppins', sans-serif;
       transition: var(--transition);
-      background: rgba(15, 23, 42, 0.5);
-      color: var(--highlight);
+      font-size: 0.95rem;
     }
     
-    form input:focus, form select:focus {
+    form input:focus, 
+    form select:focus,
+    form textarea:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
     }
     
     form button {
-      margin-top: calc(var(--spacing-unit) * 1.5);
-      padding: calc(var(--spacing-unit) * 0.75);
+      margin-top: 1.5rem;
+      padding: 0.75rem;
       width: 100%;
-      background: var(--primary);
+      background: var(--secondary);
       color: white;
       border: none;
-      border-radius: calc(var(--border-radius) * 0.7);
+      border-radius: 50px;
       cursor: pointer;
       font-weight: 600;
       transition: var(--transition);
@@ -406,34 +479,36 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
     }
     
     form button:hover {
-      background: var(--primary-dark);
+      background: var(--secondary-hover);
       transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
     }
     
     form button i {
-      margin-right: calc(var(--spacing-unit) * 0.5);
+      margin-right: 0.5rem;
     }
     
     /* Preview Section Styles */
     #previewSection {
-      margin-top: calc(var(--spacing-unit) * 1.5);
+      margin-top: 1.5rem;
       display: none;
     }
     
     #previewSection h3 {
       font-size: 1.1rem;
-      margin-bottom: var(--spacing-unit);
-      color: var(--highlight);
+      margin-bottom: 1rem;
+      color: var(--text-light);
       display: flex;
       align-items: center;
     }
     
     #previewSection h3 i {
-      margin-right: var(--spacing-unit);
-      color: var(--primary);
+      margin-right: 0.75rem;
+      color: var(--secondary);
     }
     
     /* Animations */
@@ -454,9 +529,9 @@
       height: 20px;
       border: 3px solid rgba(255,255,255,0.3);
       border-radius: 50%;
-      border-top-color: var(--primary);
+      border-top-color: var(--secondary);
       animation: spin 1s ease-in-out infinite;
-      margin-right: calc(var(--spacing-unit) * 0.5);
+      margin-right: 0.5rem;
     }
     
     @keyframes spin {
@@ -466,70 +541,55 @@
     /* Empty State */
     .empty-state {
       text-align: center;
-      padding: calc(var(--spacing-unit) * 3) var(--spacing-unit);
+      padding: 2rem;
       color: var(--text-muted);
     }
     
     .empty-state i {
       font-size: 3rem;
-      margin-bottom: var(--spacing-unit);
+      margin-bottom: 1rem;
       color: rgba(255,255,255,0.1);
     }
     
     .empty-state p {
       font-size: 1.1rem;
-      margin-top: calc(var(--spacing-unit) * 0.5);
+      margin-top: 0.5rem;
     }
     
     /* Responsive Styles */
-    @media (max-width: 1024px) {
-      aside {
-        width: 240px;
-        padding: var(--spacing-unit);
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 220px;
       }
       
-      main {
-        padding: var(--spacing-unit);
+      .main-content {
+        padding: 1.5rem;
       }
     }
     
     @media (max-width: 768px) {
-      body {
+      .dashboard {
         flex-direction: column;
       }
       
-      aside {
+      .sidebar {
         width: 100%;
-        min-height: auto;
-        padding: var(--spacing-unit);
+        padding: 1rem;
+        order: 2;
       }
       
-      aside ul {
-        display: flex;
-        overflow-x: auto;
-        padding-bottom: calc(var(--spacing-unit) * 0.5);
+      .main-content {
+        order: 1;
       }
       
-      aside ul li {
-        margin: 0 calc(var(--spacing-unit) * 0.5) 0 0;
-        white-space: nowrap;
+      header {
+        padding: 1rem;
       }
       
-      .header h1 {
-        font-size: 1.5rem;
+      .header-left h1 {
+        font-size: 1.4rem;
       }
-      
-      .grid-3 {
-        grid-template-columns: 1fr;
-      }
-      
-      .modal-content {
-        width: 95%;
-        margin: 10% auto;
-      }
-    }
-    
-    @media (max-width: 480px) {
+
       .btn-group {
         flex-direction: column;
       }
@@ -538,102 +598,127 @@
         width: 100%;
       }
     }
+    
+    @media (max-width: 576px) {
+      .modal-content {
+        padding: 1.5rem;
+      }
+      
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-
-  <!-- Sidebar -->
-  <aside>
-    <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
-    <ul>
-      <li><a href="#" onclick="showSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-      <li><a href="#" onclick="showSection('users')"><i class="fas fa-users-cog"></i> Manage Users</a></li>
-      <li><a href="#" onclick="showSection('classes')"><i class="fas fa-chalkboard-teacher"></i> Manage Classes</a></li>
-      <li><a href="#" onclick="logout()" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li> 
-    </ul>
-  </aside>
-
-  <!-- Main Content -->
-  <main>
-    <!-- Header -->
-    <div class="header">
-      <h1>Welcome, <span id="adminName">Admin</span></h1>
-      <p>Manage your Smart Attendance System</p>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="btn-group">
-      <button onclick="openModal('userModal')"><i class="fas fa-user-plus"></i> Add Student</button>
-      <button onclick="openModal('lecturerModal')"><i class="fas fa-chalkboard-user"></i> Add Lecturer</button>
-      <button onclick="openModal('classModal')"><i class="fas fa-layer-group"></i> Add Class</button>
-    </div>
-
-    <!-- Dashboard Cards -->
-    <div id="dashboardCards" class="grid-3">
-      <div class="card">
-        <h3><i class="fas fa-user-graduate"></i> Total Students</h3>
-        <p id="totalStudents"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <h1>Smart Attendance System</h1>
       </div>
-      <div class="card">
-        <h3><i class="fas fa-chalkboard-teacher"></i> Total Lecturers</h3>
-        <p id="totalLecturers"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+      <div class="header-right">
+        <span id="headerName">Admin</span>
       </div>
-      <div class="card">
-        <h3><i class="fas fa-school"></i> Active Classes</h3>
-        <p id="activeClasses"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
-      </div>
-    </div>
+    </header>
+    
+    <div class="dashboard">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
+        <ul>
+          <li><a href="#" onclick="showSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li><a href="#" onclick="showSection('users')"><i class="fas fa-users-cog"></i> Manage Users</a></li>
+          <li><a href="#" onclick="showSection('classes')"><i class="fas fa-chalkboard-teacher"></i> Manage Classes</a></li>
+          <li><a href="#" onclick="logout()" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li> 
+        </ul>
+      </nav>
 
-    <!-- Manage Users Section -->
-    <div id="usersSection" style="display: none;">
-      <div class="table-container">
-        <h2><i class="fas fa-users-cog"></i> Manage Users</h2>
-        <div id="usersEmptyState" class="empty-state" style="display: none;">
-          <i class="fas fa-user-slash"></i>
-          <h3>No Users Found</h3>
-          <p>Add new users to get started</p>
+      <!-- Main Content -->
+      <section class="main-content" id="mainContent">
+        <!-- Header -->
+        <div class="content-header">
+          <h1>Welcome, <span id="adminName">Admin</span></h1>
+          <p>Manage your Smart Attendance System</p>
         </div>
-        <table id="usersTable" style="display: none;">
-          <thead>
-            <tr>
-              <th>Bil</th>
-              <th>Full Name</th>
-              <th>Role</th>
-              <th>Email</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="usersTableBody"></tbody>
-        </table>
-      </div>
-    </div>
 
-    <!-- Manage Classes Section -->
-    <div id="classesSection" style="display: none;">
-      <div class="table-container">
-        <h2><i class="fas fa-chalkboard-teacher"></i> Manage Classes</h2>
-        <div id="classesEmptyState" class="empty-state" style="display: none;">
-          <i class="fas fa-school"></i>
-          <h3>No Classes Found</h3>
-          <p>Add new classes to get started</p>
+        <!-- Action Buttons -->
+        <div class="btn-group">
+          <button class="btn" onclick="openModal('userModal')"><i class="fas fa-user-plus"></i> Add Student</button>
+          <button class="btn" onclick="openModal('lecturerModal')"><i class="fas fa-chalkboard-user"></i> Add Lecturer</button>
+          <button class="btn" onclick="openModal('classModal')"><i class="fas fa-layer-group"></i> Add Class</button>
         </div>
-        <table id="classesTable" style="display: none;">
-        <thead>
-            <tr>
-              <th>Bil</th>
-              <th>Class ID</th>
-              <th>Class Code</th>
-              <th>Class Name</th>
-              <th>Lecturer</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
 
-          <tbody id="classesTableBody"></tbody>
-        </table>
-      </div>
+        <!-- Dashboard Cards -->
+        <div id="dashboardCards" class="cards">
+          <div class="card">
+            <i class="fas fa-user-graduate"></i>
+            <h3>Total Students</h3>
+            <p id="totalStudents"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+          </div>
+          <div class="card">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <h3>Total Lecturers</h3>
+            <p id="totalLecturers"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+          </div>
+          <div class="card">
+            <i class="fas fa-school"></i>
+            <h3>Active Classes</h3>
+            <p id="activeClasses"><i class="fas fa-spinner loading-spinner"></i> Loading...</p>
+          </div>
+        </div>
+
+        <!-- Manage Users Section -->
+        <div id="usersSection" style="display: none;">
+          <div class="table-container">
+            <h2><i class="fas fa-users-cog"></i> Manage Users</h2>
+            <div id="usersEmptyState" class="empty-state" style="display: none;">
+              <i class="fas fa-user-slash"></i>
+              <h3>No Users Found</h3>
+              <p>Add new users to get started</p>
+            </div>
+            <table id="usersTable" style="display: none;">
+              <thead>
+                <tr>
+                  <th>Bil</th>
+                  <th>Full Name</th>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Manage Classes Section -->
+        <div id="classesSection" style="display: none;">
+          <div class="table-container">
+            <h2><i class="fas fa-chalkboard-teacher"></i> Manage Classes</h2>
+            <div id="classesEmptyState" class="empty-state" style="display: none;">
+              <i class="fas fa-school"></i>
+              <h3>No Classes Found</h3>
+              <p>Add new classes to get started</p>
+            </div>
+            <table id="classesTable" style="display: none;">
+            <thead>
+                <tr>
+                  <th>Bil</th>
+                  <th>Class ID</th>
+                  <th>Class Code</th>
+                  <th>Class Name</th>
+                  <th>Lecturer</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="classesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </div>
-  </main>
+  </div>
 
   <!-- Modals -->
   <!-- Add Student Modal -->
@@ -642,43 +727,59 @@
       <span class="close" onclick="closeModal('userModal')">&times;</span>
       <h2><i class="fas fa-user-graduate"></i> Add Students</h2>
 
-      <label for="uploadMode">Select Upload Mode:</label>
-      <select id="uploadMode" onchange="toggleUploadMode()" required>
-        <option value="excel">Upload Excel</option>
-        <option value="manual">Manual Entry</option>
-      </select>
+      <div class="form-group">
+        <label for="uploadMode">Select Upload Mode:</label>
+        <select id="uploadMode" onchange="toggleUploadMode()" class="form-control" required>
+          <option value="excel">Upload Excel</option>
+          <option value="manual">Manual Entry</option>
+        </select>
+      </div>
 
       <!-- Excel Upload Form -->
       <form id="bulkUploadForm">
-        <label for="classGroupDropdown">Class ID:</label>
-        <select id="classGroupDropdown" required>
-          <option value="">Select Class ID</option>
-        </select>
+        <div class="form-group">
+          <label for="classGroupDropdown">Class ID:</label>
+          <select id="classGroupDropdown" class="form-control" required>
+            <option value="">Select Class ID</option>
+          </select>
+        </div>
 
-        <label for="classNameDropdown">Class Name:</label>
-        <select id="classNameDropdown" required>
-          <option value="">Select Class Name</option>
-        </select>
+        <div class="form-group">
+          <label for="classNameDropdown">Class Name:</label>
+          <select id="classNameDropdown" class="form-control" required>
+            <option value="">Select Class Name</option>
+          </select>
+        </div>
 
-        <label for="excelFile">Upload Excel File (.xlsx):</label>
-        <input type="file" id="excelFile" accept=".xlsx" required>
+        <div class="form-group">
+          <label for="excelFile">Upload Excel File (.xlsx):</label>
+          <input type="file" id="excelFile" class="form-control" accept=".xlsx" required>
+        </div>
 
         <button type="submit"><i class="fas fa-upload"></i> Upload Students</button>
       </form>
 
       <!-- Manual Entry Form -->
       <form id="manualStudentForm" style="display: none;">
-        <label for="manualClassGroupDropdown">Class ID:</label>
-        <select id="manualClassGroupDropdown" required></select>
+        <div class="form-group">
+          <label for="manualClassGroupDropdown">Class ID:</label>
+          <select id="manualClassGroupDropdown" class="form-control" required></select>
+        </div>
 
-        <label for="manualClassNameDropdown">Class Name:</label>
-        <select id="manualClassNameDropdown" required></select>
+        <div class="form-group">
+          <label for="manualClassNameDropdown">Class Name:</label>
+          <select id="manualClassNameDropdown" class="form-control" required></select>
+        </div>
 
-        <label for="manualStudentId">Student ID:</label>
-        <input type="text" id="manualStudentId" required placeholder="e.g. 2022999988">
+        <div class="form-group">
+          <label for="manualStudentId">Student ID:</label>
+          <input type="text" id="manualStudentId" class="form-control" required placeholder="e.g. 2022999988">
+        </div>
 
-        <label for="manualStudentName">Student Name:</label>
-        <input type="text" id="manualStudentName" required placeholder="e.g. John Doe">
+        <div class="form-group">
+          <label for="manualStudentName">Student Name:</label>
+          <input type="text" id="manualStudentName" class="form-control" required placeholder="e.g. John Doe">
+        </div>
 
         <button type="submit"><i class="fas fa-plus"></i> Add Student</button>
       </form>
@@ -686,7 +787,7 @@
       <!-- Preview Section -->
       <div id="previewSection">
         <h3><i class="fas fa-list"></i> Preview Students</h3>
-        <table id="previewTable">
+        <table id="previewTable" class="form-control">
           <thead>
             <tr>
               <th>#</th>
@@ -706,17 +807,25 @@
       <span class="close" onclick="closeModal('lecturerModal')">&times;</span>
       <h2><i class="fas fa-chalkboard-teacher"></i> Add Lecturer</h2>
       <form id="addLecturerForm">
-        <label for="lecturerFirstName">First Name:</label>
-        <input type="text" id="lecturerFirstName" required placeholder="John">
+        <div class="form-group">
+          <label for="lecturerFirstName">First Name:</label>
+          <input type="text" id="lecturerFirstName" class="form-control" required placeholder="John">
+        </div>
 
-        <label for="lecturerLastName">Last Name:</label>
-        <input type="text" id="lecturerLastName" required placeholder="Doe">
+        <div class="form-group">
+          <label for="lecturerLastName">Last Name:</label>
+          <input type="text" id="lecturerLastName" class="form-control" required placeholder="Doe">
+        </div>
 
-        <label for="lecturerEmail">Email:</label>
-        <input type="email" id="lecturerEmail" required placeholder="uid145267@uitm.my">
+        <div class="form-group">
+          <label for="lecturerEmail">Email:</label>
+          <input type="email" id="lecturerEmail" class="form-control" required placeholder="uid145267@uitm.my">
+        </div>
 
-        <label for="lecturerUsernameInput">Username:</label>
-        <input type="text" id="lecturerUsernameInput" required placeholder="uid145267">
+        <div class="form-group">
+          <label for="lecturerUsernameInput">Username:</label>
+          <input type="text" id="lecturerUsernameInput" class="form-control" required placeholder="uid145267">
+        </div>
 
         <button type="submit"><i class="fas fa-plus"></i> Add Lecturer</button>
       </form>
@@ -729,18 +838,24 @@
       <span class="close" onclick="closeModal('editUserModal')">&times;</span>
       <h2><i class="fas fa-user-edit"></i> Edit User</h2>
       <form id="editUserForm">
-        <label for="editFullName">Full Name:</label>
-        <input type="text" id="editFullName" required>
+        <div class="form-group">
+          <label for="editFullName">Full Name:</label>
+          <input type="text" id="editFullName" class="form-control" required>
+        </div>
 
-        <label for="editRole">Role:</label>
-        <select id="editRole" required>
-          <option value="student">Student</option>
-          <option value="lecturer">Lecturer</option>
-          <option value="admin">Admin</option>
-        </select>
+        <div class="form-group">
+          <label for="editRole">Role:</label>
+          <select id="editRole" class="form-control" required>
+            <option value="student">Student</option>
+            <option value="lecturer">Lecturer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
 
-        <label for="editEmail">Email:</label>
-        <input type="email" id="editEmail" required>
+        <div class="form-group">
+          <label for="editEmail">Email:</label>
+          <input type="email" id="editEmail" class="form-control" required>
+        </div>
 
         <button type="submit"><i class="fas fa-save"></i> Update User</button>
       </form>
@@ -753,47 +868,59 @@
       <span class="close" onclick="closeModal('classModal')">&times;</span>
       <h2><i class="fas fa-plus-circle"></i> Add New Class</h2>
       <form id="addClassForm">
-        <label for="classDay">Class Day:</label>
-        <select id="classDay" required>
-          <option value="">Select Day</option>
-          <option value="Monday">Monday</option>
-          <option value="Tuesday">Tuesday</option>
-          <option value="Wednesday">Wednesday</option>
-          <option value="Thursday">Thursday</option>
-          <option value="Friday">Friday</option>
-        </select>
-
-        <label for="classHour">Class Start Time:</label>
-        <div style="display: flex; gap: 10px;">
-          <select id="classHour" required style="flex: 1;">
-            <option value="">Hour</option>
-            <script>
-              for (let i = 0; i < 24; i++) {
-                document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
-              }
-            </script>
-          </select>
-          <select id="classMinute" required style="flex: 1;">
-            <option value="">Minute</option>
-            <script>
-              for (let i = 0; i < 60; i += 5) {
-                document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
-              }
-            </script>
+        <div class="form-group">
+          <label for="classDay">Class Day:</label>
+          <select id="classDay" class="form-control" required>
+            <option value="">Select Day</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
           </select>
         </div>
 
-        <label for="lecturerUsername">Lecturer Username:</label>
-        <input type="text" id="lecturerUsername" required placeholder="e.g. UID245123">
+        <div class="form-group">
+          <label for="classHour">Class Start Time:</label>
+          <div style="display: flex; gap: 10px;">
+            <select id="classHour" class="form-control" required style="flex: 1;">
+              <option value="">Hour</option>
+              <script>
+                for (let i = 0; i < 24; i++) {
+                  document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
+                }
+              </script>
+            </select>
+            <select id="classMinute" class="form-control" required style="flex: 1;">
+              <option value="">Minute</option>
+              <script>
+                for (let i = 0; i < 60; i += 5) {
+                  document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
+                }
+              </script>
+            </select>
+          </div>
+        </div>
 
-        <label for="newClassId">Class ID:</label>
-        <input type="text" id="newClassId" required placeholder="e.g. CDCS2306A">
+        <div class="form-group">
+          <label for="lecturerUsername">Lecturer Username:</label>
+          <input type="text" id="lecturerUsername" class="form-control" required placeholder="e.g. UID245123">
+        </div>
 
-        <label for="newClassCode">Class Code:</label>
-        <input type="text" id="newClassCode" required placeholder="e.g. CSC566">
+        <div class="form-group">
+          <label for="newClassId">Class ID:</label>
+          <input type="text" id="newClassId" class="form-control" required placeholder="e.g. CDCS2306A">
+        </div>
 
-        <label for="newClassName">Class Name:</label>
-        <input type="text" id="newClassName" required placeholder="e.g. Advanced Web Development">
+        <div class="form-group">
+          <label for="newClassCode">Class Code:</label>
+          <input type="text" id="newClassCode" class="form-control" required placeholder="e.g. CSC566">
+        </div>
+
+        <div class="form-group">
+          <label for="newClassName">Class Name:</label>
+          <input type="text" id="newClassName" class="form-control" required placeholder="e.g. Advanced Web Development">
+        </div>
 
         <button type="submit"><i class="fas fa-plus"></i> Create Class</button>
       </form>
@@ -806,11 +933,15 @@
       <span class="close" onclick="closeModal('editClassModal')">&times;</span>
       <h2><i class="fas fa-edit"></i> Edit Class</h2>
       <form id="editClassForm">
-        <label for="editClassName">Class Name:</label>
-        <input type="text" id="editClassName" required>
+        <div class="form-group">
+          <label for="editClassName">Class Name:</label>
+          <input type="text" id="editClassName" class="form-control" required>
+        </div>
 
-        <label for="editLecturerUsername">Lecturer Username:</label>
-        <input type="text" id="editLecturerUsername" required>
+        <div class="form-group">
+          <label for="editLecturerUsername">Lecturer Username:</label>
+          <input type="text" id="editLecturerUsername" class="form-control" required>
+        </div>
 
         <button type="submit"><i class="fas fa-save"></i> Update Class</button>
       </form>
@@ -853,6 +984,7 @@
             const firstName = userData.firstName || "";
             const lastName = userData.lastName || "";
             document.getElementById('adminName').textContent = `${firstName} ${lastName}`;
+            document.getElementById('headerName').textContent = `${firstName} ${lastName}`;
           }
         });
       } catch (error) {
@@ -1195,10 +1327,10 @@
       Swal.fire({
         title: 'Confirm Logout',
         text: 'Are you sure you want to logout?',
-        icon: 'question',
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3b82f6',
-        cancelButtonColor: '#64748b',
+        confirmButtonColor: '#f39c12',
+        cancelButtonColor: '#d1d7e0',
         confirmButtonText: 'Yes, logout',
         cancelButtonText: 'Cancel'
       }).then((result) => {
@@ -1282,7 +1414,7 @@
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
+        cancelButtonColor: '#d1d7e0',
         confirmButtonText: 'Yes, delete',
         cancelButtonText: 'Cancel'
       }).then(async (result) => {
@@ -1420,7 +1552,7 @@
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
+        cancelButtonColor: '#d1d7e0',
         confirmButtonText: 'Yes, delete',
         cancelButtonText: 'Cancel'
       }).then(async (result) => {

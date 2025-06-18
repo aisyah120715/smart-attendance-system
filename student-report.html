@@ -4,119 +4,364 @@
   <meta charset="UTF-8" />
   <title>Student Monthly Attendance Report</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 40px 20px;
+    :root {
+      --primary-dark: #0a1f44;
+      --primary: #1a3a8f;
+      --primary-light: #2a56d4;
+      --secondary: #f39c12;
+      --secondary-hover: #e67e22;
+      --success: #4CAF50;
+      --warning: #FFC107;
+      --danger: #F44336;
+      --text-light: #f8f9fa;
+      --text-muted: #d1d7e0;
+      --white: #ffffff;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      --border-radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
-    h2 {
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: var(--text-light);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: rgba(10, 31, 68, 0.9);
+      color: var(--white);
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .header-left h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      background: linear-gradient(to right, var(--white), #e0e0e0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #headerName {
+      font-weight: 500;
+      color: var(--secondary);
+      font-size: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--secondary);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
+    }
+
+    .btn:hover {
+      background: var(--secondary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      background: rgba(10, 31, 68, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .content-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--secondary);
       text-align: center;
-      color: #2c3e50;
-      font-size: 40px;
-      margin-bottom: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .student-profile {
+      text-align: center;
+      margin-bottom: 2rem;
     }
 
     #studentImage {
-      width: 150px;
-      height: 150px;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
       object-fit: cover;
       display: block;
-      margin: 0 auto 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      margin: 0 auto 1rem;
+      box-shadow: var(--shadow);
+      border: 3px solid var(--secondary);
     }
 
     #studentName {
-      text-align: center;
-      font-weight: bold;
-      font-size: 26px;
-      color: #2c3e50;
-      margin-bottom: 40px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 0.5rem;
+    }
+
+    #studentId {
+      font-size: 1rem;
+      color: var(--text-muted);
     }
 
     .report-wrapper {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 60px;
-      align-items: center;
+      gap: 2rem;
+      align-items: stretch;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .chart-box, .stats-box {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 30px;
-      width: 600px;
-      height: 450px;
+      background: rgba(26, 58, 143, 0.25);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 500px;
+      min-height: 400px;
       box-sizing: border-box;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-box {
+      justify-content: center;
     }
 
     .chart-box canvas {
-      max-height: 320px;
-      margin: auto;
+      max-width: 100%;
+      max-height: 300px;
+      margin: 0 auto;
     }
 
-    .stats-box .stat {
-      margin: 12px 0;
-      font-size: 18px;
-      font-weight: bold;
-      color: white;
-      padding: 14px;
-      border-radius: 8px;
+    .stats-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      padding: 1.25rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .on-time { background-color: rgba(76, 175, 80, 0.2); border: 1px solid var(--success); color: var(--success); }
+    .late { background-color: rgba(255, 193, 7, 0.2); border: 1px solid var(--warning); color: var(--warning); }
+    .absent { background-color: rgba(244, 67, 54, 0.2); border: 1px solid var(--danger); color: var(--danger); }
+    .total { background-color: rgba(108, 117, 125, 0.2); border: 1px solid #6c757d; color: var(--text-light); }
+
+    .summary-section {
+      grid-column: 1 / -1;
+      background: rgba(243, 156, 18, 0.1);
+      border: 1px solid rgba(243, 156, 18, 0.2);
+      padding: 1.25rem;
+      border-radius: var(--border-radius);
       text-align: center;
     }
-
-    .on-time { background-color: #4caf50; }
-    .late { background-color: #ff9800; }
-    .absent { background-color: #f44336; }
-    .total { background-color: #6c757d; }
 
     .percentage {
-      margin-top: 20px;
-      background: #2c3e50;
-      color: #fff;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 0.5rem;
     }
 
     .warning {
-      color: #c0392b;
-      margin-top: 15px;
-      font-weight: bold;
-      text-align: center;
+      color: var(--danger);
+      font-weight: 600;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .warning i {
+      font-size: 1.2rem;
+    }
+
+    @media (max-width: 992px) {
+      .report-wrapper {
+        gap: 1.5rem;
+      }
+      .chart-box, .stats-box {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 1.5rem;
+      }
+      .content-title {
+        font-size: 1.5rem;
+      }
+      .stats-box {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 576px) {
+      header {
+        padding: 1rem;
+      }
+      .header-left h1 {
+        font-size: 1.2rem;
+      }
+      .content-title {
+        font-size: 1.3rem;
+      }
+      .stats-box {
+        grid-template-columns: 1fr;
+      }
+      #studentImage {
+        width: 120px;
+        height: 120px;
+      }
+      #studentName {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
 
 <body>
-  <h2>STUDENT MONTHLY ATTENDANCE REPORT</h2>
-  <img id="studentImage" src="images/default-avatar.png" alt="Student Profile" />
-  <div id="studentName">Loading...</div>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <h1>Smart Attendance System</h1>
+      </div>
+      <div class="header-right">
+        <span id="headerName">Lecturer</span>
+        <button class="btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </header>
+    
+    <section class="main-content">
+      <h2 class="content-title"><i class="fas fa-user-graduate"></i> STUDENT MONTHLY ATTENDANCE REPORT</h2>
+      
+      <div class="student-profile">
+        <img id="studentImage" src="images/default-avatar.png" alt="Student Profile" />
+        <div id="studentName">Loading...</div>
+        <div id="studentId"></div>
+      </div>
 
-  <div class="report-wrapper" id="reportContent">
-    <div class="chart-box">
-      <canvas id="attendanceChart" width="300" height="300"></canvas>
-    </div>
-    <div class="stats-box">
-      <div class="stat on-time" id="onTime">On Time: --</div>
-      <div class="stat late" id="late">Late: --</div>
-      <div class="stat absent" id="absent">Absent: --</div>
-      <div class="stat total" id="total">Total Days: --</div>
-      <div class="percentage" id="percentage">Attendance %: --</div>
-      <div class="warning" id="warningBox" style="display:none;"></div>
-    </div>
+      <div class="report-wrapper">
+        <div class="chart-box">
+          <canvas id="attendanceChart" width="400" height="400"></canvas>
+        </div>
+        
+        <div class="stats-box">
+          <div class="stat on-time">
+            <span class="stat-value" id="onTime">--</span>
+            <span class="stat-label">On Time</span>
+          </div>
+          
+          <div class="stat late">
+            <span class="stat-value" id="late">--</span>
+            <span class="stat-label">Late</span>
+          </div>
+          
+          <div class="stat absent">
+            <span class="stat-value" id="absent">--</span>
+            <span class="stat-label">Absent</span>
+          </div>
+          
+          <div class="stat total">
+            <span class="stat-value" id="total">--</span>
+            <span class="stat-label">Total Days</span>
+          </div>
+          
+          <div class="summary-section">
+            <div class="percentage" id="percentage">Attendance: --%</div>
+            <div class="warning" id="warningBox" style="display:none;">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>Low Attendance Warning!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
@@ -130,18 +375,28 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth();
 
     const urlParams = new URLSearchParams(window.location.search);
     const studentId = urlParams.get('studentId');
-    const fullClassPath = urlParams.get('classId'); // like "CDCS2306A/class/class1"
+    const fullClassPath = urlParams.get('classId');
     const [classId, , classKey] = fullClassPath.split('/');
+
+    // Set header name from localStorage
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const username = localStorage.getItem("username");
+        const lecturerName = localStorage.getItem("lecturerName");
+        document.getElementById("headerName").textContent = lecturerName || username || 'Lecturer';
+      }
+    });
 
     async function loadStudentReport() {
       const attendanceRef = ref(db, `attendance/${classId}/class/${classKey}/${studentId}`);
       const snapshot = await get(attendanceRef);
 
       if (!snapshot.exists()) {
-        document.getElementById("studentName").textContent = "Student data not found.";
+        document.getElementById("studentName").textContent = "Student data not found";
         return;
       }
 
@@ -160,55 +415,82 @@
       const total = onTime + late + absent;
       const percent = total ? (((onTime + late) / total) * 100).toFixed(1) : "0";
 
-      document.getElementById("studentName").textContent = `${studentName.toUpperCase()} ( ${studentId} )`;
-      document.getElementById("onTime").textContent = `ON TIME : ${onTime}`;
-      document.getElementById("late").textContent = `LATE : ${late}`;
-      document.getElementById("absent").textContent = `ABSENT : ${absent}`;
-      document.getElementById("total").textContent = `TOTAL DAYS : ${total}`;
-      document.getElementById("percentage").textContent = `ATTENDANCE PERCENTAGE: ${percent}%`;
+      document.getElementById("studentName").textContent = studentName;
+      document.getElementById("studentId").textContent = `ID: ${studentId}`;
+      document.getElementById("onTime").textContent = onTime;
+      document.getElementById("late").textContent = late;
+      document.getElementById("absent").textContent = absent;
+      document.getElementById("total").textContent = total;
+      document.getElementById("percentage").textContent = `Attendance: ${percent}%`;
 
-      if (percent < 75) {
-        document.getElementById("warningBox").style.display = "block";
-        document.getElementById("warningBox").textContent = "⚠️ Low Attendance Warning!";
+      if (percent < 90) {
+        document.getElementById("warningBox").style.display = "flex";
       }
 
-      // Set image manually using static URL (fallback already set in HTML)
+      /* PROFILE IMAGE LOADING - KEPT EXACTLY AS IN ORIGINAL CODE */
       const img = document.getElementById("studentImage");
       const imageUrl = `https://firebasestorage.googleapis.com/v0/b/login-form-9b836.firebasestorage.app/o/profile_pics%2F${studentId}.jpg?alt=media&token=8442cec8-2799-481d-ba5e-deaea4d30708`;
       const testImage = new Image();
-      testImage.onload = () => img.src = imageUrl;  // Only use if load is successful
+      testImage.onload = () => img.src = imageUrl;
       testImage.onerror = () => console.warn("Profile image not found, using fallback.");
       testImage.src = imageUrl;
+      /* END OF UNCHANGED PROFILE IMAGE CODE */
 
       drawChart(onTime, late, absent);
     }
 
     function drawChart(onTime, late, absent) {
-  const ctx = document.getElementById("attendanceChart").getContext("2d");
+      const ctx = document.getElementById("attendanceChart").getContext("2d");
+      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-light');
 
-  // Check if chart exists and is a valid Chart.js instance
-  if (window.attendanceChart instanceof Chart) {
-    window.attendanceChart.destroy();
-  }
-
-  // Create new chart and store it in the window
-  window.attendanceChart = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: ["On Time", "Late", "Absent"],
-      datasets: [{
-        data: [onTime, late, absent],
-        backgroundColor: ["#4caf50", "#ff9800", "#f44336"]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: "bottom" }
+      if (window.attendanceChart instanceof Chart) {
+        window.attendanceChart.destroy();
       }
+
+      window.attendanceChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: ["On Time", "Late", "Absent"],
+          datasets: [{
+            data: [onTime, late, absent],
+            backgroundColor: ["#4caf50", "#ff9800", "#f44336"]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" }
+          }
+        }
+      });
     }
-  });
-}
+
+    function logout() {
+      Swal.fire({
+        title: 'Logout Confirmation',
+        text: 'Are you sure you want to logout?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#f39c12',
+        cancelButtonColor: '#d1d7e0',
+        confirmButtonText: 'Yes, logout',
+        cancelButtonText: 'Cancel',
+        background: 'rgba(10, 31, 68, 0.9)',
+        color: '#f8f9fa'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          auth.signOut()
+            .then(() => {
+              localStorage.clear();
+              window.location.href = "login.html";
+            })
+            .catch((error) => {
+              console.error("Logout error:", error);
+              Swal.fire('Error', 'Logout failed. Please try again.', 'error');
+            });
+        }
+      });
+    }
 
     loadStudentReport();
   </script>

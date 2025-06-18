@@ -2,280 +2,707 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Monthly Attendance Report</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-  body {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #e2e8f0;
-  }
-  h2 {
-    font-weight: 700;
-    font-size: 2.2rem;
-    color: #3b82f6;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  .legend {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: 500;
-    color: #cbd5e1;
-    font-size: 1rem;
-  }
-  .status-on-time {
-    color: #22c55e;
-    font-weight: bold;
-    text-align: center;
-  }
-  .status-late {
-    color: #fbbf24;
-    font-weight: bold;
-    text-align: center;
-  }
-  .status-absent {
-    color: #ef4444;
-    font-weight: bold;
-    text-align: center;
-  }
-  .summary-cell {
-    background-color: #1e293b;
-    color: #ffffff;
-    font-weight: 600;
-    text-align: center;
-  }
-  .footer-summary {
-    text-align: right;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 1rem;
-    color: #f1f5f9;
-  }
-  .details-btn {
-    background: transparent;
-    border: 1px solid #3b82f6;
-    color: #3b82f6;
-    padding: 5px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .details-btn:hover {
-    background: #3b82f6;
-    color: #fff;
-  }
-  .form-label {
-    color: #cbd5e1;
-  }
-  .form-control, .form-select {
-    background-color: #1e293b;
-    color: #f8fafc;
-    border: 1px solid #334155;
-  }
-  .form-control:focus, .form-select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-  }
-  .btn-success, .btn-danger {
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 18px;
-  }
-  .btn-success {
-    background-color: #10b981;
-    color: #fff;
-  }
-  .btn-success:hover {
-    background-color: #059669;
-  }
-  .btn-danger {
-    background-color: #ef4444;
-    color: #fff;
-  }
-  .btn-danger:hover {
-    background-color: #dc2626;
-  }
-  .table-responsive {
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  }
-  .table {
-    background-color: #1e293b;
-    color: #ffffff;
-    border-radius: 0;
-  }
-  .table th, .table td {
-    border-color: #334155;
-    vertical-align: middle;
-    font-size: 14px;
-    color: #ffffff;
-  }
-  .table td {
-    background-color: #1f2937;
-  }
-  .table thead th {
-    background-color: #1d4ed8;
-    color: #ffffff;
-    font-weight: 600;
-    text-align: center;
-  }
-  .table-hover tbody tr:hover {
-    background-color: rgba(59, 130, 246, 0.1);
-  }
-  .table td:last-child {
-    text-align: center;
-  }
-</style>
+    :root {
+          --primary-dark: #0a1f44;  /* Dark blue background */
+          --primary: #1a3a8f;       /* Primary blue */
+          --primary-light: #2a56d4; /* Lighter blue */
+          --secondary: #f39c12;     /* Orange - main accent */
+          --secondary-hover: #e67e22; /* Darker orange */
+          --text-light: #f0f2f5;    /* Light text */
+          --text-muted: #d1d7e0;    /* Muted text */
+          --white: #ffffff;         /* Pure white */
+          --success: #4CAF50;       /* Green */
+          --warning: #FFC107;       /* Yellow */
+          --danger: #F44336;        /* Red */
+          --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+          --border-radius: 12px;
+          --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: var(--text-light);
+      min-height: 100vh;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Styles */
+    header {
+      background: var(--primary);
+      color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: linear-gradient(to right, var(--white), var(--text-muted));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #headerName {
+      font-weight: 500;
+      color: var(--secondary);
+      font-size: 1rem;
+    }
+
+    /* Main Layout */
+    .app-container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 280px;
+      background: var(--primary);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.5rem 1rem;
+      overflow-y: auto;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-header i {
+      color: var(--secondary);
+      font-size: 1.5rem;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--secondary);
+    }
+
+    .nav-link i {
+      width: 24px;
+      text-align: center;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      background: var(--primary-dark);
+    }
+
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .page-title i {
+      color: var(--secondary);
+    }
+
+    /* Filter Controls */
+    .filter-container {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--primary);
+      color: var(--text-light);
+      transition: var(--transition);
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    /* Status Legend */
+    .status-legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--primary);
+      border-radius: var(--border-radius);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .status-on-time {
+      color: var(--success);
+    }
+
+    .status-late {
+      color: var(--warning);
+    }
+
+    .status-absent {
+      color: var(--danger);
+    }
+
+    /* Table Styles */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--border-radius);
+      background: var(--primary);
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .attendance-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--text-light);
+    }
+
+    .attendance-table th,
+    .attendance-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .attendance-table th {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--secondary);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+
+    .attendance-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Status cells */
+    .status-cell {
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .status-cell.on-time {
+      color: var(--success);
+    }
+
+    .status-cell.late {
+      color: var(--warning);
+    }
+
+    .status-cell.absent {
+      color: var(--danger);
+    }
+
+    /* Summary Section */
+    .summary-section {
+      display: flex;
+      justify-content: flex-end;
+      padding: 1rem;
+      background: var(--primary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+    }
+
+    .summary-text {
+      font-weight: 600;
+      color: var(--secondary);
+    }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--secondary);
+      color: var(--primary-dark);
+    }
+
+    .btn-primary:hover {
+      background: var(--secondary-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--primary-light);
+      color: var(--text-light);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    /* Form Elements */
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--primary);
+      color: var(--text-light);
+      transition: var(--transition);
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
+
+    /* Card Styles */
+    .card {
+      background: var(--primary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--white);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 240px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        padding: 1rem;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .main-content {
+        padding: 1.5rem;
+      }
+
+      .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .filter-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .filter-group {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 576px) {
+      header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+      
+      .header-left h1 {
+        font-size: 1.25rem;
+      }
+      
+      .btn {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.8125rem;
+      }
+      
+      .nav-link {
+        padding: 0.625rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+      
+      .form-control, .form-select {
+        padding: 0.625rem 0.875rem;
+      }
+    }
+  </style>
 </head>
 
-<body class="p-4">
-<div class="container">
-  <h2>Monthly Attendance Report</h2>
+<body>
+  <header>
+    <div class="header-left">
+      <h1>Smart Attendance System</h1>
+    </div>
+    <div class="header-right">
+      <span id="headerName">Lecturer</span>
+      <button class="btn btn-primary" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </header>
+  
+  <div class="app-container">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-chalkboard-teacher"></i>
+        <h2>Lecturer Panel</h2>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard_lecturer.html" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="class-list.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Class List</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="class-schedule.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Class Schedule</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="monthly-report.html" class="nav-link active">
+            <i class="fas fa-chart-line"></i>
+            <span>Monthly Report</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="attendance-logs.html" class="nav-link">
+            <i class="fas fa-user-clock"></i>
+            <span>Attendance Logs</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="absence-requests.html" class="nav-link">
+            <i class="fas fa-file-alt"></i>
+            <span>Absence Requests</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="warning-center.html" class="nav-link">
+            <i class="fas fa-bell"></i>
+            <span>Warnings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
 
-  <div class="legend">
-    ✅ = On Time | ⚠️ = Late | ❌ = Absent
+    <main class="main-content">
+      <div class="content-header">
+        <h1 class="page-title">
+          <i class="fas fa-chart-line"></i>
+          <span>Monthly Attendance Report</span>
+        </h1>
+        <div class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="studentFilter" placeholder="Search by Student ID..." />
+        </div>
+      </div>
+
+      <div class="status-legend">
+        <div class="status-item">
+          <i class="fas fa-check-circle status-on-time"></i>
+          <span>On Time</span>
+        </div>
+        <div class="status-item">
+          <i class="fas fa-exclamation-circle status-late"></i>
+          <span>Late</span>
+        </div>
+        <div class="status-item">
+          <i class="fas fa-times-circle status-absent"></i>
+          <span>Absent</span>
+        </div>
+      </div>
+
+      <div class="filter-container">
+        <div class="filter-group">
+          <label for="classSelect" class="form-label">Select Class</label>
+          <select id="classSelect" class="form-select">
+            <option value="">-- Select Class --</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterFromMonth" class="form-label">Filter From</label>
+          <select id="filterFromMonth" class="form-select">
+            <option value="2025-01">January</option>
+            <option value="2025-02">February</option>
+            <option value="2025-03">March</option>
+            <option value="2025-04" selected>April</option>
+            <option value="2025-05">May</option>
+            <option value="2025-06">June</option>
+            <option value="2025-07">July</option>
+            <option value="2025-08">August</option>
+            <option value="2025-09">September</option>
+            <option value="2025-10">October</option>
+            <option value="2025-11">November</option>
+            <option value="2025-12">December</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterToMonth" class="form-label">Filter To</label>
+          <select id="filterToMonth" class="form-select">
+            <option value="2025-01">January</option>
+            <option value="2025-02">February</option>
+            <option value="2025-03">March</option>
+            <option value="2025-04">April</option>
+            <option value="2025-05">May</option>
+            <option value="2025-06" selected>June</option>
+            <option value="2025-07">July</option>
+            <option value="2025-08">August</option>
+            <option value="2025-09">September</option>
+            <option value="2025-10">October</option>
+            <option value="2025-11">November</option>
+            <option value="2025-12">December</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="exportOptions" class="card" style="display: none;">
+        <h3 class="card-title">Export Options</h3>
+        <div class="filter-container">
+          <div class="filter-group">
+            <label for="exportFromMonth" class="form-label">Export From</label>
+            <select id="exportFromMonth" class="form-select">
+              <option value="2025-01">January</option>
+              <option value="2025-02">February</option>
+              <option value="2025-03">March</option>
+              <option value="2025-04">April</option>
+              <option value="2025-05">May</option>
+              <option value="2025-06">June</option>
+              <option value="2025-07">July</option>
+              <option value="2025-08">August</option>
+              <option value="2025-09">September</option>
+              <option value="2025-10">October</option>
+              <option value="2025-11">November</option>
+              <option value="2025-12">December</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="exportToMonth" class="form-label">Export To</label>
+            <select id="exportToMonth" class="form-select">
+              <option value="2025-01">January</option>
+              <option value="2025-02">February</option>
+              <option value="2025-03">March</option>
+              <option value="2025-04">April</option>
+              <option value="2025-05">May</option>
+              <option value="2025-06">June</option>
+              <option value="2025-07">July</option>
+              <option value="2025-08">August</option>
+              <option value="2025-09">September</option>
+              <option value="2025-10">October</option>
+              <option value="2025-11">November</option>
+              <option value="2025-12">December</option>
+            </select>
+          </div>
+          <div class="filter-group" style="align-self: flex-end;">
+            <button id="confirmExport" class="btn btn-primary w-100">Confirm Export</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportSection" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3>Class: <span id="selectedClass" class="text-warning"></span></h3>
+          <div>
+            <button id="excelBtn" class="btn btn-success me-2">
+              <i class="fas fa-file-excel"></i> Export to Excel
+            </button>
+            <button id="pdfBtn" class="btn btn-danger">
+              <i class="fas fa-file-pdf"></i> Export to PDF
+            </button>
+          </div>
+        </div>
+        
+        <div class="table-wrapper">
+          <table class="attendance-table" id="attendanceTable">
+            <thead>
+              <tr id="headerRow">
+                <th>No.</th>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Present</th>
+                <th>Total</th>
+                <th>%</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Attendance data will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+        <div class="summary-section">
+          <div id="classSummary" class="summary-text"></div>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <div class="mb-4 row g-3 align-items-end">
-    <div class="col-md-4">
-      <label for="classSelect" class="form-label">Select Class</label>
-      <select id="classSelect" class="form-select">
-        <option value="">-- Select Class --</option>
-      </select>
-    </div>
-   <div class="col-md-4">
-  <label for="filterFromMonth" class="form-label">Filter From</label>
-  <select id="filterFromMonth" class="form-select">
-    <option value="2025-01">January</option>
-    <option value="2025-02">February</option>
-    <option value="2025-03">March</option>
-    <option value="2025-04" selected>April</option>
-    <option value="2025-05">May</option>
-    <option value="2025-06">June</option>
-    <option value="2025-07">July</option>
-    <option value="2025-08">August</option>
-    <option value="2025-09">September</option>
-    <option value="2025-10">October</option>
-    <option value="2025-11">November</option>
-    <option value="2025-12">December</option>
-  </select>
-</div>
-
-<div class="col-md-4">
-  <label for="filterToMonth" class="form-label">Filter To</label>
-  <select id="filterToMonth" class="form-select">
-    <option value="2025-01">January</option>
-    <option value="2025-02">February</option>
-    <option value="2025-03">March</option>
-    <option value="2025-04">April</option>
-    <option value="2025-05">May</option>
-    <option value="2025-06" selected>June</option>
-    <option value="2025-07">July</option>
-    <option value="2025-08">August</option>
-    <option value="2025-09">September</option>
-    <option value="2025-10">October</option>
-    <option value="2025-11">November</option>
-    <option value="2025-12">December</option>
-  </select>
-</div>
-
-    <div class="col-md-4">
-      <label for="studentFilter" class="form-label">Filter by Student ID</label>
-      <input type="text" id="studentFilter" class="form-control" placeholder="e.g. 2022827688">
-    </div>
-  </div>
-
- <div id="exportOptions" class="card bg-dark text-white p-3 mb-3" style="display: none;">
-  <div class="row g-3">
-    <div class="col-md-4">
-      <label for="exportFromMonth" class="form-label">Export From</label>
-      <select id="exportFromMonth" class="form-select">
-        <option value="2025-01">January</option>
-        <option value="2025-02">February</option>
-        <option value="2025-03">March</option>
-        <option value="2025-04">April</option>
-        <option value="2025-05">May</option>
-        <option value="2025-06">June</option>
-        <option value="2025-07">July</option>
-        <option value="2025-08">August</option>
-        <option value="2025-09">September</option>
-        <option value="2025-10">October</option>
-        <option value="2025-11">November</option>
-        <option value="2025-12">December</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label for="exportToMonth" class="form-label">Export To</label>
-      <select id="exportToMonth" class="form-select">
-         <option value="2025-01">January</option>
-          <option value="2025-02">February</option>
-          <option value="2025-03">March</option>
-          <option value="2025-04">April</option>
-          <option value="2025-05">May</option>
-          <option value="2025-06">June</option>
-          <option value="2025-07">July</option>
-          <option value="2025-08">August</option>
-          <option value="2025-09">September</option>
-          <option value="2025-10">October</option>
-          <option value="2025-11">November</option>
-          <option value="2025-12">December</option>
-      </select>
-    </div>
-    <div class="col-md-4 d-flex align-items-end">
-      <button id="confirmExport" class="btn btn-primary w-100">Confirm Export</button>
-    </div>
-  </div>
-</div>
-
-
-
-  <div id="reportSection" style="display:none;">
-    <h5 class="mb-3">Class: <span id="selectedClass" class="text-primary"></span></h5>
-    <div class="mb-3">
-     <button id="excelBtn" class="btn btn-success me-2">Export to Excel</button>
-    <button id="pdfBtn" class="btn btn-danger">Export to PDF</button>
-
-    </div>
-    
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover" id="attendanceTable">
-        <thead class="table-light">
-          <tr id="headerRow">
-            <th>Bil</th>
-            <th>Student ID</th>
-            <th>Name</th>
-            <th>Present</th>
-            <th>Total</th>
-            <th>%</th>
-            <th></th> 
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-         
-        </tbody>
-      </table>
-    </div>
-    <div id="classSummary" class="footer-summary"></div>
-  </div>
-</div>
-
-<script type="module">
-
-
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
+<script>
+// Firebase configuration and initialization remains the same
 const firebaseConfig = {
   apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
   authDomain: "login-form-9b836.firebaseapp.com",
@@ -286,10 +713,12 @@ const firebaseConfig = {
   appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth();
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
 
+// DOM elements
 const classSelect = document.getElementById("classSelect");
 const studentFilter = document.getElementById("studentFilter");
 const filterFromMonth = document.getElementById("filterFromMonth");
@@ -304,33 +733,32 @@ const summaryDiv = document.getElementById("classSummary");
 if (sessionStorage.getItem("selectedClass")) {
   classSelect.value = sessionStorage.getItem("selectedClass");
 }
-if (sessionStorage.getItem("selectedMonth")) {
-  monthSelect.value = sessionStorage.getItem("selectedMonth");
-}
 if (sessionStorage.getItem("studentFilter")) {
   studentFilter.value = sessionStorage.getItem("studentFilter");
 }
 
-onAuthStateChanged(auth, async (user) => {
+auth.onAuthStateChanged(user => {
   if (user) {
     const username = localStorage.getItem("username");
     if (!username) {
       alert("Username not found.");
       return;
     }
-    await loadLecturerClasses(username);
-    await fetchAndRender();  // after class loaded, render immediately
+    document.getElementById("headerName").textContent = username || 'Lecturer';
+    loadLecturerClasses(username);
+    setupEventListeners();
   } else {
     alert("Not logged in.");
   }
 });
 
 async function loadLecturerClasses(username) {
-  const classSnap = await get(child(ref(db), "class_schedules"));
+  const classSnap = await db.ref("class_schedules").once("value");
   classSelect.innerHTML = `<option value="">-- Select Class --</option>`;
 
-  for (const classId in classSnap.val()) {
-    const classGroup = classSnap.val()[classId].class;
+  classSnap.forEach(classIdSnap => {
+    const classId = classIdSnap.key;
+    const classGroup = classIdSnap.child("class").val();
 
     for (const classKey in classGroup) {
       const classData = classGroup[classKey];
@@ -341,23 +769,22 @@ async function loadLecturerClasses(username) {
         classSelect.appendChild(option);
       }
     }
-  }
+  });
 
   if (sessionStorage.getItem("selectedClass")) {
     classSelect.value = sessionStorage.getItem("selectedClass");
+    fetchAndRender();
   }
 }
 
-
 function setupEventListeners() {
   // First remove any existing listeners
-[classSelect, filterFromMonth, filterToMonth, studentFilter].forEach(el => {
-  el.removeEventListener("change", handleFilterChange);
-  el.removeEventListener("input", handleFilterInput);
-  el.addEventListener("change", handleFilterChange);
-  el.addEventListener("input", handleFilterInput);
-});
-
+  [classSelect, filterFromMonth, filterToMonth, studentFilter].forEach(el => {
+    el.removeEventListener("change", handleFilterChange);
+    el.removeEventListener("input", handleFilterInput);
+    el.addEventListener("change", handleFilterChange);
+    el.addEventListener("input", handleFilterInput);
+  });
 
   // Add fresh listeners
   classSelect.addEventListener("change", handleFilterChange);
@@ -392,7 +819,7 @@ async function fetchAndRender() {
   if (!cls) return;
 
   const [classId, , classKey] = cls.split("/");
-  const classSnap = await get(child(ref(db), `attendance/${classId}/class/${classKey}`));
+  const classSnap = await db.ref(`attendance/${classId}/class/${classKey}`).once("value");
 
   if (!classSnap.exists()) return;
 
@@ -412,8 +839,8 @@ async function fetchAndRender() {
       return month >= fromMonth && month <= toMonth;
     };
 
-  const monthRecords = Object.entries(attendanceRecords)
-  .filter(([_, record]) => isWithinRange(record.timestamp));
+    const monthRecords = Object.entries(attendanceRecords)
+      .filter(([_, record]) => isWithinRange(record.timestamp));
 
     if (monthRecords.length === 0) continue;
 
@@ -433,20 +860,20 @@ async function fetchAndRender() {
       const date = record.timestamp.split(" ")[0];
       headers.add(date);
 
-      let status = "❌";
-      let statusClass = "status-absent";
+      let status = "absent";
+      let statusIcon = '<i class="fas fa-times-circle"></i>';
       
       if (record.status === "On Time") {
-        status = "✅";
-        statusClass = "status-on-time";
+        status = "on-time";
+        statusIcon = '<i class="fas fa-check-circle"></i>';
         studentDataMap[studentId].present++;
       } else if (record.status === "Late") {
-        status = "⚠️";
-        statusClass = "status-late";
+        status = "late";
+        statusIcon = '<i class="fas fa-exclamation-circle"></i>';
         studentDataMap[studentId].present++;
       }
 
-      studentDataMap[studentId].data[date] = { status, statusClass };
+      studentDataMap[studentId].data[date] = { status, statusIcon };
       studentDataMap[studentId].total++;
     });
   }
@@ -455,43 +882,45 @@ async function fetchAndRender() {
   const dates = Array.from(headers).sort();
 
   // Build header row
-  headerRow.innerHTML = `<th>Bil</th><th>Student ID</th><th>Name</th>`;
+  headerRow.innerHTML = `<th>No.</th><th>Student ID</th><th>Name</th>`;
   dates.forEach(date => headerRow.innerHTML += `<th>${date}</th>`);
-  headerRow.innerHTML += `<th>Present</th><th>Total</th><th>%</th><th></th>`;
+  headerRow.innerHTML += `<th>Present</th><th>Total</th><th>%</th><th>Actions</th>`;
 
   // Build student rows
   let totalPresent = 0, totalEntries = 0;
   studentData.sort((a, b) => a.name.localeCompare(b.name));
   studentData.forEach((student, idx) => {
-        // Replace the row creation section with:
-      const tr = document.createElement("tr");
-      let rowHTML = `
-        <td>${idx + 1}</td>
-        <td>${student.id}</td>
-        <td>${student.name}</td>
-              `;
+    const tr = document.createElement("tr");
+    let rowHTML = `
+      <td>${idx + 1}</td>
+      <td>${student.id}</td>
+      <td>${student.name}</td>
+    `;
 
-        dates.forEach(date => {
-          const cell = student.data[date];
-          rowHTML += cell
-            ? `<td class="${cell.statusClass}">${cell.status}</td>`
-            : `<td class="status-absent">❌</td>`;
-        });
+    dates.forEach(date => {
+      const cell = student.data[date];
+      rowHTML += cell
+        ? `<td class="status-cell ${cell.status}">${cell.statusIcon}</td>`
+        : `<td class="status-cell absent"><i class="fas fa-times-circle"></i></td>`;
+    });
 
-     const percent = student.total ? ((student.present / student.total) * 100).toFixed(1) : "0";
-      totalPresent += student.present;
-      totalEntries += student.total;
+    const percent = student.total ? ((student.present / student.total) * 100).toFixed(1) : "0";
+    totalPresent += student.present;
+    totalEntries += student.total;
 
-      rowHTML += `
-        <td class="summary-cell">${student.present}</td>
-        <td class="summary-cell">${student.total}</td>
-        <td class="summary-cell">${percent}%</td>
-        <td><a class="details-btn" href="student-report.html?studentId=${student.id}&classId=${cls}">View</a></td>
-      `;
+    rowHTML += `
+      <td>${student.present}</td>
+      <td>${student.total}</td>
+      <td>${percent}%</td>
+      <td>
+        <a class="btn btn-secondary btn-sm" href="student-report.html?studentId=${student.id}&classId=${cls}">
+          <i class="fas fa-eye"></i> View
+        </a>
+      </td>
+    `;
 
-
-        tr.innerHTML = rowHTML;
-        tableBody.appendChild(tr);
+    tr.innerHTML = rowHTML;
+    tableBody.appendChild(tr);
   });
 
   const avg = totalEntries ? ((totalPresent / totalEntries) * 100).toFixed(1) : "0";
@@ -511,10 +940,13 @@ window.exportToExcel = () => {
 
   // Replace icons with text
   clone.querySelectorAll("td,th").forEach(cell => {
-    cell.textContent = cell.textContent
-      .replace("✅", "On Time")
-      .replace("⚠️", "Late")
-      .replace("❌", "Absent");
+    if (cell.innerHTML.includes("fa-check-circle")) {
+      cell.textContent = "On Time";
+    } else if (cell.innerHTML.includes("fa-exclamation-circle")) {
+      cell.textContent = "Late";
+    } else if (cell.innerHTML.includes("fa-times-circle")) {
+      cell.textContent = "Absent";
+    }
   });
 
   // Get all header cells
@@ -561,10 +993,13 @@ window.exportToPDF = () => {
 
   // Convert icons to text
   clone.querySelectorAll("td,th").forEach(cell => {
-    cell.textContent = cell.textContent
-      .replace("✅", "On Time")
-      .replace("⚠️", "Late")
-      .replace("❌", "Absent");
+    if (cell.innerHTML.includes("fa-check-circle")) {
+      cell.textContent = "On Time";
+    } else if (cell.innerHTML.includes("fa-exclamation-circle")) {
+      cell.textContent = "Late";
+    } else if (cell.innerHTML.includes("fa-times-circle")) {
+      cell.textContent = "Absent";
+    }
   });
 
   // Remove "View" column
@@ -640,6 +1075,30 @@ document.getElementById("pdfBtn").addEventListener("click", () => {
   window.showExportOptions("pdf");
 });
 
+function logout() {
+  Swal.fire({
+    title: 'Logout Confirmation',
+    text: 'Are you sure you want to logout?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#f59e0b',
+    cancelButtonColor: '#94a3b8',
+    confirmButtonText: 'Yes, logout',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      auth.signOut()
+        .then(() => {
+          localStorage.removeItem("username");
+          window.location.href = "login.html";
+        })
+        .catch((error) => {
+          console.error("Logout error:", error);
+          Swal.fire('Error', 'Logout failed. Please try again.', 'error');
+        });
+    }
+  });
+}
 </script>
 </body>
 </html>

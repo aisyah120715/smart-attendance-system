@@ -3,139 +3,381 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lecturer Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <title>Lecturer Dashboard - Smart Attendance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
+    :root {
+      --primary-dark: #0a1f44;
+      --primary: #1a3a8f;
+      --primary-light: #2a56d4;
+      --secondary: #f39c12;
+      --secondary-hover: #e67e22;
+      --text-light: #f8f9fa;
+      --text-muted: #d1d7e0;
+      --white: #ffffff;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      --border-radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
     }
+
     body {
-      background: linear-gradient(135deg, #141e30, #243b55);
-      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: var(--text-light);
+      min-height: 100vh;
+      line-height: 1.6;
     }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    
     header {
+      background: rgba(10, 31, 68, 0.9);
+      color: var(--white);
+      padding: 1.25rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 30px 60px;
-      background-color: #1a1a2e;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow);
+      z-index: 100;
     }
+
+    .header-left h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      background: linear-gradient(to right, var(--white), #e0e0e0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 0.5px;
+    }
+
     .header-right {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 1rem;
     }
-    .logout-btn {
-      background: #e94560;
-      border: none;
-      padding: 10px 20px;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 15px;
-      transition: background 0.3s;
+
+    #headerName {
+      font-weight: 500;
+      color: var(--secondary);
+      font-size: 1rem;
     }
-    .logout-btn:hover {
-      background: #d63447;
-    }
-    .dashboard-title {
-      text-align: center;
-      margin-top: 40px;
-      font-size: 30px;
-      font-weight: 600;
-      color: #f7f7f7;
-    }
+
     .dashboard {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 30px;
-      padding: 40px 60px;
+      display: flex;
+      flex: 1;
+      overflow: hidden;
     }
-    .row {
-      display: contents;
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 260px;
+      background: rgba(10, 31, 68, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.5rem 1rem;
+      transition: var(--transition);
+      overflow-y: auto;
     }
-    .card {
-      background-color: #1f4068;
-      border-radius: 20px;
-      padding: 40px 20px;
+
+    .sidebar h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar h2 i {
+      margin-right: 0.75rem;
+      color: var(--secondary);
+    }
+
+    .sidebar ul { 
+      list-style: none; 
+    }
+
+    .sidebar ul li { 
+      margin-bottom: 0.75rem;
+    }
+
+    .sidebar ul li a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+    }
+
+    .sidebar ul li a i {
+      font-size: 1rem;
+      margin-right: 0.75rem;
+      width: 20px;
       text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: rgba(243, 156, 18, 0.15);
+      color: var(--secondary);
+      transform: translateX(5px);
+    }
+
+    .sidebar ul li a.logout {
+      color: #ef4444;
+    }
+
+    .sidebar ul li a.logout:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      background: rgba(10, 31, 68, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .content-header {
+      background: rgba(26, 58, 143, 0.25);
+      padding: 1.75rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: var(--transition);
+    }
+
+    .content-header:hover {
+      border-color: rgba(243, 156, 18, 0.3);
+    }
+
+    .content-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+    }
+
+    .content-header p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--secondary);
+      border: none;
+      border-radius: 50px;
       cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
     }
+
+    .btn:hover {
+      background: var(--secondary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
+    }
+
+    .btn i {
+      margin-right: 0.5rem;
+    }
+
+    /* Card Grid Styles */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: rgba(26, 58, 143, 0.25);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 1.75rem;
+      text-align: center;
+      transition: var(--transition);
+      cursor: pointer;
+      color: var(--text-light);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+    }
+
     .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      background: rgba(26, 58, 143, 0.35);
+      border-color: rgba(243, 156, 18, 0.3);
     }
+
     .card i {
-      font-size: 35px;
-      color: #00adb5;
-      margin-bottom: 20px;
+      font-size: 2.25rem;
+      color: var(--secondary);
+      margin-bottom: 0.75rem;
     }
+
     .card h3 {
-      font-size: 22px;
-      margin-bottom: 10px;
-      color: #ffffff;
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
     }
+
     .card p {
-      font-size: 14px;
-      color: #cccccc;
+      font-size: 0.85rem;
+      color: var(--text-muted);
     }
+
+    /* Responsive Styles */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 220px;
+      }
+      
+      .main-content {
+        padding: 1.5rem;
+      }
+    }
+
     @media (max-width: 768px) {
       .dashboard {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        padding: 1rem;
+        order: 2;
+      }
+      
+      .main-content {
+        order: 1;
+      }
+      
+      header {
+        padding: 1rem;
+      }
+      
+      .header-left h1 {
+        font-size: 1.4rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .cards {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <h1>Smart Attendance System</h1>
+      </div>
+      <div class="header-right">
+        <span id="headerName">Lecturer</span>
+        <button class="btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </header>
+    
+    <div class="dashboard">
+      <nav class="sidebar">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Lecturer Panel</h2>
+        <ul>
+          <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li><a href="class-list.html"><i class="fas fa-users"></i> Class List</a></li>
+          <li><a href="class-schedule.html"><i class="fas fa-calendar-alt"></i> Class Schedule</a></li>
+          <li><a href="monthly-report.html"><i class="fas fa-chart-line"></i> Monthly Report</a></li>
+          <li><a href="attendance-logs.html"><i class="fas fa-user-clock"></i> Attendance Logs</a></li>
+          <li><a href="absence-requests.html"><i class="fas fa-file-alt"></i> Absence Requests</a></li>
+          <li><a href="warning-center.html"><i class="fas fa-bell"></i> Warnings</a></li>
+        </ul>
+      </nav>
 
-  <header>
-    <div style="font-size: 28px; font-weight: 600;">Lecturer Dashboard</div>
-    <div class="header-right">
-      <div id="welcome" style="font-size: 18px;">Loading...</div>
-      <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-  </header>
+      <section class="main-content">
+        <div class="content-header">
+          <h1>Welcome, <span id="lecturerName">Lecturer</span></h1>
+          <p>Manage your classes and student attendance</p>
+        </div>
 
-  <div class="dashboard-title">Manage Your Tasks Efficiently</div>
-
-  <div class="dashboard">
-    <div class="card" onclick="location.href='class-list.html'">
-      <i class="fas fa-chalkboard-teacher"></i>
-      <h3>Class List</h3>
-      <p>View and manage your classes.</p>
-    </div>
-    <div class="card" onclick="location.href='class-schedule.html'">
-      <i class="fas fa-calendar-alt"></i>
-      <h3>Class Schedule</h3>
-      <p>Schedule upcoming lectures.</p>
-    </div>
-    <div class="card" onclick="location.href='monthly-report.html'">
-      <i class="fas fa-chart-line"></i>
-      <h3>Monthly Report</h3>
-      <p>View attendance analytics.</p>
-    </div>
-    <div class="card" onclick="location.href='attendance-logs.html'">
-      <i class="fas fa-user-clock"></i>
-      <h3>Attendance Logs</h3>
-      <p>Track student attendance.</p>
-    </div>
-    <div class="card" onclick="location.href='absence-requests.html'">
-      <i class="fas fa-file-alt"></i>
-      <h3>Absence Requests</h3>
-      <p>Review absence submissions.</p>
-    </div>
-    <div class="card" onclick="location.href='warning-center.html'">
-      <i class="fas fa-bell"></i>
-      <h3>Warnings</h3>
-      <p>See repeated absence cases.</p>
+        <div class="cards">
+          <div class="card" onclick="location.href='class-list.html'">
+            <i class="fas fa-users"></i>
+            <h3>Class List</h3>
+            <p>View and manage your classes</p>
+          </div>
+          <div class="card" onclick="location.href='class-schedule.html'">
+            <i class="fas fa-calendar-alt"></i>
+            <h3>Class Schedule</h3>
+            <p>Schedule upcoming lectures</p>
+          </div>
+          <div class="card" onclick="location.href='monthly-report.html'">
+            <i class="fas fa-chart-line"></i>
+            <h3>Monthly Report</h3>
+            <p>View attendance analytics</p>
+          </div>
+          <div class="card" onclick="location.href='attendance-logs.html'">
+            <i class="fas fa-user-clock"></i>
+            <h3>Attendance Logs</h3>
+            <p>Track student attendance</p>
+          </div>
+          <div class="card" onclick="location.href='absence-requests.html'">
+            <i class="fas fa-file-alt"></i>
+            <h3>Absence Requests</h3>
+            <p>Review absence submissions</p>
+          </div>
+          <div class="card" onclick="location.href='warning-center.html'">
+            <i class="fas fa-bell"></i>
+            <h3>Warnings</h3>
+            <p>See repeated absence cases</p>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -164,14 +406,15 @@
             if (data.email === user.email) {
               const firstName = data.firstName || '';
               const lastName = data.lastName || '';
-              document.getElementById('welcome').textContent = `Welcome, ${firstName} ${lastName}`;
+              document.getElementById('lecturerName').textContent = `${firstName} ${lastName}`;
+              document.getElementById('headerName').textContent = `${firstName} ${lastName}`;
             }
           });
         } catch (error) {
-          document.getElementById('welcome').textContent = 'Error loading name';
+          document.getElementById('lecturerName').textContent = 'Error loading name';
         }
       } else {
-        document.getElementById('welcome').textContent = 'Not logged in';
+        document.getElementById('lecturerName').textContent = 'Not logged in';
       }
     });
 
@@ -180,8 +423,8 @@
         title: 'Are you sure you want to logout?',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#f39c12',
+        cancelButtonColor: '#d1d7e0',
         confirmButtonText: 'Yes, logout',
         cancelButtonText: 'Cancel'
       }).then((result) => {
@@ -205,6 +448,5 @@
       });
     }
   </script>
-
 </body>
 </html>

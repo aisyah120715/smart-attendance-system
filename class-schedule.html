@@ -7,7 +7,8 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     :root {
       --primary-dark: #0a1f44;
@@ -337,7 +338,7 @@
         <h1>Smart Attendance System</h1>
       </div>
       <div class="header-right">
-        <span id="headerName">Lecturer</span>
+        <span id="headerName">Loading...</span>
         <button class="btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
       </div>
     </header>
@@ -372,8 +373,9 @@
   import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyDufExYJU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+    apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
     authDomain: "login-form-9b836.firebaseapp.com",
+    databaseURL: "https://login-form-9b836-default-rtdb.firebaseio.com",
     projectId: "login-form-9b836",
     storageBucket: "login-form-9b836.appspot.com",
     messagingSenderId: "878421828817",
@@ -385,31 +387,26 @@
   const auth = getAuth(app);
   const container = document.getElementById("classContainer");
 
-  async function loadLecturerName(username) {
-  try {
-    const docRef = doc(db, "users", username);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      const fullName = `${data.firstname} ${data.lastname}`;
-      document.getElementById("headerName").textContent = fullName;
-    } else {
-      document.getElementById("headerName").textContent = "Lecturer";
+  // Updated name fetching to match monthly report page
+  async function loadLecturerName(user) {
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const firstName = userData.firstName || '';
+        const lastName = userData.lastName || '';
+        const displayName = `${firstName} ${lastName}`.trim() || 'Lecturer';
+        document.getElementById("headerName").textContent = displayName;
+      } else {
+        const username = localStorage.getItem("username");
+        document.getElementById("headerName").textContent = username || 'Lecturer';
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      const username = localStorage.getItem("username");
+      document.getElementById("headerName").textContent = username || 'Lecturer';
     }
-  } catch (error) {
-    console.error("Error fetching lecturer name:", error);
-    document.getElementById("headerName").textContent = "Lecturer";
   }
-}
-    const currentUsername = localStorage.getItem("username");
-    if (!currentUsername) {
-      container.innerHTML = '<div class="message">❌ You are not logged in. Please log in first.</div>';
-    } else {
-      loadLecturerName(currentUsername);  // fetch and display lecturer's name
-      fetchClasses(currentUsername);
-    }
-
 
   async function fetchClasses(username) {
     try {
@@ -447,7 +444,7 @@
               timetable[capitalDay].push({
                 time: time,
                 className: `${cls.class_name} (${cls.class_code})`,
-                 classId: classId,
+                classId: classId,
                 lecturer: cls.lecturer_username
               });
             }
@@ -482,7 +479,6 @@
                 <span style="font-size: 0.85rem; color: var(--text-muted);">${classForDay.classId}</span><br>
                 <small>${classForDay.time} - ${String(parseInt(classForDay.time.split(":")[0]) + 2).padStart(2, '0')}:00</small>
               </td>`;
-
           } else {
             tableHTML += "<td></td>";
           }
@@ -493,7 +489,6 @@
 
       tableHTML += "</tbody></table>";
       
-      // Replace just the spinner with the table, keeping the card structure
       const scheduleCard = document.querySelector('.schedule-card');
       scheduleCard.querySelector('.spinner').remove();
       scheduleCard.insertAdjacentHTML('beforeend', tableHTML);
@@ -503,6 +498,21 @@
       console.error("Error:", error);
     }
   }
+
+  // Initialize the page
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      loadLecturerName(user); // Pass the user object directly
+      const username = localStorage.getItem("username");
+      if (!username) {
+        container.innerHTML = '<div class="message">❌ You are not logged in. Please log in first.</div>';
+        return;
+      }
+      fetchClasses(username);
+    } else {
+      container.innerHTML = '<div class="message">❌ You are not logged in. Please log in first.</div>';
+    }
+  });
 
   function logout() {
     if (typeof Swal === 'undefined') {
@@ -538,6 +548,8 @@
         alert("Logout failed. Please try again.");
       });
   }
+
+  window.logout = logout;
 </script>
 
 </body>

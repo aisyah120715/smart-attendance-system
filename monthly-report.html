@@ -17,23 +17,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <style>
     :root {
-          --primary-dark: #0a1f44;  /* Dark blue background */
-          --primary: #1a3a8f;       /* Primary blue */
-          --primary-light: #2a56d4; /* Lighter blue */
-          --secondary: #f39c12;     /* Orange - main accent */
-          --secondary-hover: #e67e22; /* Darker orange */
-          --text-light: #f0f2f5;    /* Light text */
-          --text-muted: #d1d7e0;    /* Muted text */
-          --white: #ffffff;         /* Pure white */
-          --success: #4CAF50;       /* Green */
-          --warning: #FFC107;       /* Yellow */
-          --danger: #F44336;        /* Red */
-          --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-          --border-radius: 12px;
-          --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --primary-dark: #0a1f44;
+      --primary: #1a3a8f;
+      --primary-light: #2a56d4;
+      --secondary: #f39c12;
+      --secondary-hover: #e67e22;
+      --text-light: #f8f9fa;
+      --text-muted: #d1d7e0;
+      --white: #ffffff;
+      --success: #4CAF50;
+      --warning: #FFC107;
+      --danger: #F44336;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      --border-radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
     * {
@@ -54,12 +55,14 @@
 
     /* Header Styles */
     header {
-      background: var(--primary);
+      background: rgba(10, 31, 68, 0.9);
       color: var(--white);
-      padding: 1rem 2rem;
+      padding: 1.25rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: var(--shadow);
       position: sticky;
@@ -68,12 +71,13 @@
     }
 
     .header-left h1 {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 600;
       background: linear-gradient(to right, var(--white), var(--text-muted));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      letter-spacing: 0.5px;
     }
 
     .header-right {
@@ -99,7 +103,9 @@
     /* Sidebar Styles */
     .sidebar {
       width: 280px;
-      background: var(--primary);
+      background: rgba(10, 31, 68, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-right: 1px solid rgba(255, 255, 255, 0.1);
       padding: 1.5rem 1rem;
       overflow-y: auto;
@@ -148,8 +154,9 @@
 
     .nav-link:hover,
     .nav-link.active {
-      background: rgba(245, 158, 11, 0.1);
+      background: rgba(243, 156, 18, 0.15);
       color: var(--secondary);
+      transform: translateX(5px);
     }
 
     .nav-link i {
@@ -162,7 +169,9 @@
       flex: 1;
       padding: 2rem;
       overflow-y: auto;
-      background: var(--primary-dark);
+      background: rgba(10, 31, 68, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .content-header {
@@ -185,44 +194,35 @@
       color: var(--secondary);
     }
 
-    /* Filter Controls */
-    .filter-container {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .filter-group {
-      flex: 1;
-      min-width: 200px;
-    }
-
+    /* Search Box Styles */
     .search-box {
       position: relative;
       flex: 1;
       min-width: 250px;
+      max-width: 400px;
     }
 
     .search-box input {
       width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem;
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: var(--primary);
+      padding: 0.75rem 1rem 0.75rem 3rem;
+      border-radius: 50px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(26, 58, 143, 0.3);
       color: var(--text-light);
       transition: var(--transition);
+      font-size: 0.95rem;
     }
 
     .search-box input:focus {
       outline: none;
       border-color: var(--secondary);
-      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.3);
+      background: rgba(26, 58, 143, 0.5);
     }
 
     .search-icon {
       position: absolute;
-      left: 1rem;
+      left: 1.25rem;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
@@ -234,8 +234,11 @@
       gap: 1.5rem;
       margin-bottom: 1.5rem;
       padding: 0.75rem 1rem;
-      background: var(--primary);
+      background: rgba(26, 58, 143, 0.25);
       border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .status-item {
@@ -257,14 +260,56 @@
       color: var(--danger);
     }
 
+    /* Filter Controls */
+    .filter-container {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(26, 58, 143, 0.3);
+      color: var(--text-light);
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.3);
+      background: rgba(26, 58, 143, 0.5);
+    }
+
     /* Table Styles */
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
       border-radius: var(--border-radius);
-      background: var(--primary);
+      background: rgba(26, 58, 143, 0.25);
       box-shadow: var(--shadow);
       margin-bottom: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .attendance-table {
@@ -277,11 +322,11 @@
     .attendance-table td {
       padding: 1rem;
       text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .attendance-table th {
-      background: rgba(245, 158, 11, 0.1);
+      background: rgba(243, 156, 18, 0.2);
       color: var(--secondary);
       font-weight: 600;
       position: sticky;
@@ -289,7 +334,7 @@
     }
 
     .attendance-table tr:hover {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     /* Status cells */
@@ -315,9 +360,12 @@
       display: flex;
       justify-content: flex-end;
       padding: 1rem;
-      background: var(--primary);
+      background: rgba(26, 58, 143, 0.25);
       border-radius: var(--border-radius);
       margin-top: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .summary-text {
@@ -330,14 +378,15 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.75rem 1.5rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      border-radius: var(--border-radius);
+      padding: 0.75rem 1.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 50px;
       cursor: pointer;
       transition: var(--transition);
       border: none;
       gap: 0.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .btn-primary {
@@ -348,6 +397,7 @@
     .btn-primary:hover {
       background: var(--secondary-hover);
       transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
     }
 
     .btn-secondary {
@@ -356,7 +406,7 @@
     }
 
     .btn-secondary:hover {
-      background: #475569;
+      background: #3a6bdf;
     }
 
     .btn-success {
@@ -369,38 +419,16 @@
       color: white;
     }
 
-    /* Form Elements */
-    .form-label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text-muted);
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-
-    .form-select {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: var(--primary);
-      color: var(--text-light);
-      transition: var(--transition);
-    }
-
-    .form-select:focus {
-      outline: none;
-      border-color: var(--secondary);
-      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-    }
-
     /* Card Styles */
     .card {
-      background: var(--primary);
+      background: rgba(26, 58, 143, 0.25);
       border-radius: var(--border-radius);
       padding: 1.5rem;
       box-shadow: var(--shadow);
       margin-bottom: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .card-title {
@@ -441,6 +469,7 @@
 
       .search-box {
         width: 100%;
+        max-width: 100%;
       }
 
       .filter-container {
@@ -558,7 +587,7 @@
         </h1>
         <div class="search-box">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" id="studentFilter" placeholder="Search by Student ID..." />
+          <input type="text" id="studentFilter" placeholder="Search by Student ID or Name..." />
         </div>
       </div>
 
@@ -702,7 +731,7 @@
   </div>
 
 <script>
-// Firebase configuration and initialization remains the same
+// Firebase configuration and initialization
 const firebaseConfig = {
   apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
   authDomain: "login-form-9b836.firebaseapp.com",
@@ -717,6 +746,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
+const firestore = firebase.firestore();
 
 // DOM elements
 const classSelect = document.getElementById("classSelect");
@@ -728,6 +758,7 @@ const selectedClass = document.getElementById("selectedClass");
 const reportSection = document.getElementById("reportSection");
 const headerRow = document.getElementById("headerRow");
 const summaryDiv = document.getElementById("classSummary");
+const headerNameElement = document.getElementById("headerName");
 
 // Restore previous selections if exist
 if (sessionStorage.getItem("selectedClass")) {
@@ -739,16 +770,36 @@ if (sessionStorage.getItem("studentFilter")) {
 
 auth.onAuthStateChanged(user => {
   if (user) {
+    // Fetch lecturer's full name from Firestore
+    firestore.collection('users').doc(user.uid).get().then(doc => {
+      if (doc.exists) {
+        const userData = doc.data();
+        const firstName = userData.firstName || '';
+        const lastName = userData.lastName || '';
+        const displayName = `${firstName} ${lastName}`.trim() || 'Lecturer';
+        headerNameElement.textContent = displayName;
+      } else {
+        // Fallback to username if no name in Firestore
+        const username = localStorage.getItem("username");
+        headerNameElement.textContent = username || 'Lecturer';
+      }
+    }).catch(error => {
+      console.error("Error fetching user data:", error);
+      const username = localStorage.getItem("username");
+      headerNameElement.textContent = username || 'Lecturer';
+    });
+
     const username = localStorage.getItem("username");
     if (!username) {
       alert("Username not found.");
       return;
     }
-    document.getElementById("headerName").textContent = username || 'Lecturer';
+    
     loadLecturerClasses(username);
     setupEventListeners();
   } else {
     alert("Not logged in.");
+    window.location.href = "login.html"; // Redirect to login page if not logged in
   }
 });
 
@@ -809,7 +860,7 @@ async function fetchAndRender() {
   const cls = classSelect.value;
   const fromMonth = filterFromMonth.value;
   const toMonth = filterToMonth.value;
-  const filter = studentFilter.value.trim();
+  const filter = studentFilter.value.trim().toLowerCase();
 
   selectedClass.textContent = classSelect.options[classSelect.selectedIndex].text;
   reportSection.style.display = cls ? "block" : "none";
@@ -829,8 +880,6 @@ async function fetchAndRender() {
 
   // Process all student data
   for (const studentId in students) {
-    if (filter && !studentId.includes(filter)) continue;
-
     const attendanceRecords = students[studentId];
     const isWithinRange = (timestamp) => {
       const date = timestamp?.split(" ")[0];
@@ -846,9 +895,18 @@ async function fetchAndRender() {
 
     // Initialize student data if not exists
     if (!studentDataMap[studentId]) {
+      const studentName = monthRecords[0][1].name || "Unknown";
+      
+      // Skip if filter doesn't match student ID or name
+      if (filter && 
+          !studentId.toLowerCase().includes(filter) && 
+          !studentName.toLowerCase().includes(filter)) {
+        continue;
+      }
+
       studentDataMap[studentId] = {
         id: studentId,
-        name: monthRecords[0][1].name || "Unknown",
+        name: studentName,
         data: {},
         present: 0,
         total: 0
@@ -1081,8 +1139,8 @@ function logout() {
     text: 'Are you sure you want to logout?',
     icon: 'question',
     showCancelButton: true,
-    confirmButtonColor: '#f59e0b',
-    cancelButtonColor: '#94a3b8',
+    confirmButtonColor: '#f39c12',
+    cancelButtonColor: '#d1d7e0',
     confirmButtonText: 'Yes, logout',
     cancelButtonText: 'Cancel'
   }).then((result) => {

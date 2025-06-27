@@ -584,7 +584,7 @@ async function fetchAttendanceData(classId, classKey) {
         monthlyData[month].total++;
 
         const status = studentRecords[date].status || "Absent";
-        if (["On Time", "Late", "Approved Absence"].includes(status)) {
+        if (["On Time", "Late", "Absent with Permission"].includes(status)) {
           monthlyData[month].present++;
         }
       }

@@ -712,7 +712,7 @@ function loadClass(classId, classKey, className) {
 }
 
 function loadAttendanceForDate(classId, classKey, className, date) {
-  document.getElementById("spinner").style.display = "block";
+   document.getElementById("spinner").style.display = "block";
   db.ref(`attendance/${classId}/class/${classKey}`).once("value", snapshot => {
     document.getElementById("spinner").style.display = "none";
     if (!snapshot.exists()) {
@@ -732,8 +732,11 @@ function loadAttendanceForDate(classId, classKey, className, date) {
           records.push({ studentID, name: r.name, status: r.status, timestamp });
 
           const statusLower = r.status.toLowerCase();
-          if (statusLower === 'on time' || statusLower === 'late') presentCount++;
-          else if (statusLower === 'absent') absentCount++;
+          if (statusLower === 'on time' || statusLower === 'late' || statusLower === 'absent with permission') {
+            presentCount++;
+          } else if (statusLower === 'absent') {
+            absentCount++;
+          }
         }
       });
     });
@@ -784,19 +787,22 @@ function loadAttendanceForDate(classId, classKey, className, date) {
       `;
 
       records.sort((a, b) => a.name.localeCompare(b.name));
-      records.forEach((rec, idx) => {
-        const fontColor = rec.status.toLowerCase() === 'on time' ? '#4CAF50' :
-                          rec.status.toLowerCase() === 'late' ? '#FF9800' : '#F44336';
-        tableHtml += `
-          <tr>
-            <td>${idx + 1}</td>
-            <td>${rec.studentID}</td>
-            <td>${rec.name}</td>
-            <td style="color:${fontColor}; font-weight:bold;">${rec.status}</td>
-            <td>${rec.timestamp}</td>
-          </tr>
-        `;
-      });
+     records.forEach((rec, idx) => {
+  const statusLower = rec.status.toLowerCase();
+  const fontColor = statusLower === 'on time' ? '#4CAF50' :
+                    statusLower === 'late' ? '#FF9800' :
+                    statusLower === 'absent with permission' ? '#9C27B0' : // Purple for permission
+                    '#F44336'; // Red for absent
+  tableHtml += `
+    <tr>
+      <td>${idx + 1}</td>
+      <td>${rec.studentID}</td>
+      <td>${rec.name}</td>
+      <td style="color:${fontColor}; font-weight:bold;">${rec.status}</td>
+      <td>${rec.timestamp}</td>
+    </tr>
+  `;
+});
 
       tableHtml += `
           </tbody>

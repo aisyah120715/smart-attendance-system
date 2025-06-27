@@ -32,6 +32,7 @@
       --success: #4CAF50;
       --warning: #FFC107;
       --danger: #F44336;
+      --permission: #9C27B0;
       --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
       --border-radius: 12px;
       --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -260,6 +261,10 @@
       color: var(--danger);
     }
 
+    .status-permission {
+      color: var(--permission);
+    }
+
     /* Filter Controls */
     .filter-container {
       display: flex;
@@ -353,6 +358,10 @@
 
     .status-cell.absent {
       color: var(--danger);
+    }
+
+    .status-cell.permission {
+      color: var(--permission);
     }
 
     /* Summary Section */
@@ -601,6 +610,10 @@
           <span>Late</span>
         </div>
         <div class="status-item">
+          <i class="fas fa-check-circle status-permission"></i>
+          <span>Absent with Permission</span>
+        </div>
+        <div class="status-item">
           <i class="fas fa-times-circle status-absent"></i>
           <span>Absent</span>
         </div>
@@ -831,8 +844,6 @@ async function loadLecturerClasses(username) {
 function setupEventListeners() {
   // First remove any existing listeners
   [classSelect, filterFromMonth, filterToMonth, studentFilter].forEach(el => {
-    el.removeEventListener("change", handleFilterChange);
-    el.removeEventListener("input", handleFilterInput);
     el.addEventListener("change", handleFilterChange);
     el.addEventListener("input", handleFilterInput);
   });
@@ -852,9 +863,6 @@ function handleFilterInput() {
   sessionStorage.setItem("studentFilter", studentFilter.value);
   fetchAndRender();
 }
-
-// Call this once during initialization
-setupEventListeners();
 
 async function fetchAndRender() {
   const cls = classSelect.value;
@@ -929,9 +937,17 @@ async function fetchAndRender() {
         status = "late";
         statusIcon = '<i class="fas fa-exclamation-circle"></i>';
         studentDataMap[studentId].present++;
+      } else if (record.status === "Absent with Permission") {
+        status = "permission";
+        statusIcon = '<i class="fas fa-check-circle" style="color: var(--permission)"></i>';
+        studentDataMap[studentId].present++;
       }
 
-      studentDataMap[studentId].data[date] = { status, statusIcon };
+      studentDataMap[studentId].data[date] = { 
+        status, 
+        statusIcon,
+        originalStatus: record.status 
+      };
       studentDataMap[studentId].total++;
     });
   }
@@ -957,9 +973,17 @@ async function fetchAndRender() {
 
     dates.forEach(date => {
       const cell = student.data[date];
-      rowHTML += cell
-        ? `<td class="status-cell ${cell.status}">${cell.statusIcon}</td>`
-        : `<td class="status-cell absent"><i class="fas fa-times-circle"></i></td>`;
+      if (cell) {
+        if (cell.originalStatus === "Absent with Permission") {
+          rowHTML += `<td class="status-cell permission" title="Absent with Permission">
+            <i class="fas fa-check-circle"></i>
+          </td>`;
+        } else {
+          rowHTML += `<td class="status-cell ${cell.status}">${cell.statusIcon}</td>`;
+        }
+      } else {
+        rowHTML += `<td class="status-cell absent"><i class="fas fa-times-circle"></i></td>`;
+      }
     });
 
     const percent = student.total ? ((student.present / student.total) * 100).toFixed(1) : "0";
@@ -999,7 +1023,11 @@ window.exportToExcel = () => {
   // Replace icons with text
   clone.querySelectorAll("td,th").forEach(cell => {
     if (cell.innerHTML.includes("fa-check-circle")) {
-      cell.textContent = "On Time";
+      if (cell.classList.contains("permission")) {
+        cell.textContent = "Absent with Permission";
+      } else {
+        cell.textContent = "On Time";
+      }
     } else if (cell.innerHTML.includes("fa-exclamation-circle")) {
       cell.textContent = "Late";
     } else if (cell.innerHTML.includes("fa-times-circle")) {
@@ -1052,7 +1080,11 @@ window.exportToPDF = () => {
   // Convert icons to text
   clone.querySelectorAll("td,th").forEach(cell => {
     if (cell.innerHTML.includes("fa-check-circle")) {
-      cell.textContent = "On Time";
+      if (cell.classList.contains("permission")) {
+        cell.textContent = "Absent with Permission";
+      } else {
+        cell.textContent = "On Time";
+      }
     } else if (cell.innerHTML.includes("fa-exclamation-circle")) {
       cell.textContent = "Late";
     } else if (cell.innerHTML.includes("fa-times-circle")) {

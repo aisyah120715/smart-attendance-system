@@ -622,22 +622,34 @@ function renderTable(data) {
     document.getElementById("requestTableContainer").style.display = "block";
     
     data.forEach(req => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${req.studentId}</td>
-        <td>${req.studentName}</td>
-        <td>${req.className || 'N/A'}</td> <!-- Added class name display -->
-        <td>${req.reason}</td>
-        <td>${req.date}</td>
-        <td>${req.proofLink ? `<a href="${req.proofLink}" target="_blank" class="view-btn"><i class="fas fa-eye"></i> View</a>` : 'No Proof'}</td>
-        <td class="${req.status === 'Pending' ? 'status-pending' : req.status === 'Approved' ? 'status-approved' : 'status-rejected'}">${req.status}</td>
-        <td>
-          ${req.status === "Pending" ? `
-            <button class="action-btn approve-btn" onclick="updateStatus('${req.key}', 'Approved', '${req.classId}', '${req.studentId}', '${req.date}')"><i class="fas fa-check"></i> Approve</button>
-            <button class="action-btn reject-btn" onclick="updateStatus('${req.key}', 'Rejected')"><i class="fas fa-times"></i> Reject</button>
-          ` : ''}
-        </td>
-      `;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${req.studentId}</td>
+      <td>${req.studentName}</td>
+      <td>${req.className || 'N/A'}</td>
+      <td>${req.reason}</td>
+      <td>${req.date}</td>
+      <td>${req.proofLink ? `<a href="${req.proofLink}" target="_blank" class="view-btn"><i class="fas fa-eye"></i> View</a>` : 'No Proof'}</td>
+      <td class="${req.status === 'Pending' ? 'status-pending' : req.status === 'Approved' ? 'status-approved' : 'status-rejected'}">${req.status}</td>
+      <td>
+        ${req.status === "Pending" ? `
+          <button class="action-btn approve-btn" 
+            onclick="updateStatus(
+              '${req.key}', 
+              'Approved', 
+              '${req.classId}', 
+              '${req.studentId}', 
+              '${req.date.replace(/ /g, '_')}'
+            )">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button class="action-btn reject-btn" 
+            onclick="updateStatus('${req.key}', 'Rejected')">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        ` : ''}
+      </td>
+    `;
       requestTable.appendChild(tr);
 
       total++;
@@ -683,28 +695,48 @@ window.updateStatus = async (key, status, classId = null, studentId = null, date
   }
 
   try {
+    // Update the absence request status
     const updateRef = db.ref(`absence_requests/${lecturerUsername}/${key}`);
     await updateRef.update({ status });
 
     if (status === "Approved" && classId && studentId && date) {
-      const attendanceRef = db.ref(`attendance/${classId}/${studentId}/${date}`);
-      await attendanceRef.update({ status: "Absent with Permission" });
+      // Only update attendance record if approved
+      const [courseCode, , classNumber] = classId.split('/');
+      const attendancePath = `attendance/${courseCode}/class/${classNumber}/${studentId}/${date}`;
+      
+      await db.ref(attendancePath).update({
+        status: "Absent with Permission",
+        lastUpdated: Date.now(),
+        approvedBy: lecturerUsername,
+        approvalDate: new Date().toISOString()
+      });
+      
+      Swal.fire({ 
+        icon: 'success', 
+        title: '✅ Approved Successfully!', 
+        text: 'Attendance status updated to "Absent with Permission"',
+        timer: 1500, 
+        showConfirmButton: false,
+        background: 'rgba(10, 31, 68, 0.9)',
+        color: 'var(--text-light)'
+      });
+    } else if (status === "Rejected") {
+      Swal.fire({ 
+        icon: 'success', 
+        title: '❌ Rejected Successfully!', 
+        text: 'The absence request has been rejected. Attendance remains marked as Absent.',
+        timer: 1500, 
+        showConfirmButton: false,
+        background: 'rgba(10, 31, 68, 0.9)',
+        color: 'var(--text-light)'
+      });
     }
-
-    Swal.fire({ 
-      icon: 'success', 
-      title: `✅ ${status} Successfully!`, 
-      timer: 1500, 
-      showConfirmButton: false,
-      background: 'rgba(10, 31, 68, 0.9)',
-      color: 'var(--text-light)'
-    });
   } catch (error) {
     console.error("Error updating status:", error);
     Swal.fire({
       icon: 'error',
       title: 'Update Failed',
-      text: 'An error occurred while updating the status.',
+      text: 'An error occurred while updating the records.',
       background: 'rgba(10, 31, 68, 0.9)',
       color: 'var(--text-light)'
     });

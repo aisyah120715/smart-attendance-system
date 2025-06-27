@@ -1102,7 +1102,7 @@ window.submitAbsenceWithUpload = async (classId, className, lecturerUsername, se
 
     // Upload file to storage
     const filePath = `absence_proofs/${studentData.username}_${classId.replace(/\//g, '-')}_${selectedDate}.pdf`;
-    const storage = getStorage(app, 'gs://login-form-9b836.appspot.com');
+    const storage = getStorage(app, 'gs://login-form-9b836.firebasestorage.app');
     const storageRefPath = storageRef(storage, filePath);
     
     const uploadTask = await uploadBytes(storageRefPath, file);

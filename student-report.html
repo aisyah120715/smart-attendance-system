@@ -5,7 +5,6 @@
   <title>Student Monthly Attendance Report</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -19,6 +18,7 @@
       --success: #4CAF50;
       --warning: #FFC107;
       --danger: #F44336;
+      --permission: #9C27B0;
       --text-light: #f8f9fa;
       --text-muted: #d1d7e0;
       --white: #ffffff;
@@ -223,6 +223,7 @@
     .on-time { background-color: rgba(76, 175, 80, 0.2); border: 1px solid var(--success); color: var(--success); }
     .late { background-color: rgba(255, 193, 7, 0.2); border: 1px solid var(--warning); color: var(--warning); }
     .absent { background-color: rgba(244, 67, 54, 0.2); border: 1px solid var(--danger); color: var(--danger); }
+    .permission { background-color: rgba(156, 39, 176, 0.2); border: 1px solid var(--permission); color: var(--permission); }
     .total { background-color: rgba(108, 117, 125, 0.2); border: 1px solid #6c757d; color: var(--text-light); }
 
     .summary-section {
@@ -308,7 +309,7 @@
       </div>
       <div class="header-right">
         <span id="headerName">Lecturer</span>
-        <button class="btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+       <button class="btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
       </div>
     </header>
     
@@ -337,6 +338,11 @@
             <span class="stat-label">Late</span>
           </div>
           
+          <div class="stat permission">
+            <span class="stat-value" id="permission">--</span>
+            <span class="stat-label">Permission</span>
+          </div>
+          
           <div class="stat absent">
             <span class="stat-value" id="absent">--</span>
             <span class="stat-label">Absent</span>
@@ -359,141 +365,154 @@
     </section>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+  <!-- Inside your <script type="module"> -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+  import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js"; // ✅ Added
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
-      authDomain: "login-form-9b836.firebaseapp.com",
-      databaseURL: "https://login-form-9b836-default-rtdb.firebaseio.com",
-      projectId: "login-form-9b836",
-      storageBucket: "login-form-9b836.appspot.com",
-      messagingSenderId: "878421828817",
-      appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
+    authDomain: "login-form-9b836.firebaseapp.com",
+    databaseURL: "https://login-form-9b836-default-rtdb.firebaseio.com",
+    projectId: "login-form-9b836",
+    storageBucket: "login-form-9b836.appspot.com",
+    messagingSenderId: "878421828817",
+    appId: "1:878421828817:web:5941ad4c1605e9fc1551f0"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth();
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+  const storage = getStorage(app); // ✅ Initialize Firebase Storage
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const studentId = urlParams.get('studentId');
-    const fullClassPath = urlParams.get('classId');
-    const [classId, , classKey] = fullClassPath.split('/');
+  const urlParams = new URLSearchParams(window.location.search);
+  const studentId = urlParams.get('studentId');
+  const fullClassPath = urlParams.get('classId');
+  const [classId, , classKey] = fullClassPath.split('/');
 
-    // Set header name from localStorage
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const username = localStorage.getItem("username");
-        const lecturerName = localStorage.getItem("lecturerName");
-        document.getElementById("headerName").textContent = lecturerName || username || 'Lecturer';
-      }
+  // Set header name
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      const username = localStorage.getItem("username");
+      const lecturerName = localStorage.getItem("lecturerName");
+      document.getElementById("headerName").textContent = lecturerName || username || 'Lecturer';
+    }
+  });
+
+  async function loadStudentReport() {
+    const attendanceRef = ref(db, `attendance/${classId}/class/${classKey}/${studentId}`);
+    const snapshot = await get(attendanceRef);
+
+    if (!snapshot.exists()) {
+      document.getElementById("studentName").textContent = "Student data not found";
+      return;
+    }
+
+    const data = snapshot.val();
+    const keys = Object.keys(data).filter(k => data[k].name && data[k].status);
+    const studentName = keys.length > 0 ? data[keys[0]].name : "Unknown";
+
+    let onTime = 0, late = 0, permission = 0, absent = 0;
+    keys.forEach(key => {
+      const status = data[key].status;
+      if (status === "On Time") onTime++;
+      else if (status === "Late") late++;
+      else if (status === "Absent with Permission") permission++;
+      else if (status === "Absent") absent++;
     });
 
-    async function loadStudentReport() {
-      const attendanceRef = ref(db, `attendance/${classId}/class/${classKey}/${studentId}`);
-      const snapshot = await get(attendanceRef);
+    const total = onTime + late + permission + absent;
+    const percent = total ? (((onTime + late + permission) / total) * 100).toFixed(1) : "0";
 
-      if (!snapshot.exists()) {
-        document.getElementById("studentName").textContent = "Student data not found";
-        return;
-      }
+    document.getElementById("studentName").textContent = studentName;
+    document.getElementById("studentId").textContent = `ID: ${studentId}`;
+    document.getElementById("onTime").textContent = onTime;
+    document.getElementById("late").textContent = late;
+    document.getElementById("permission").textContent = permission;
+    document.getElementById("absent").textContent = absent;
+    document.getElementById("total").textContent = total;
+    document.getElementById("percentage").textContent = `Attendance: ${percent}%`;
 
-      const data = snapshot.val();
-      const keys = Object.keys(data).filter(k => data[k].name && data[k].status);
-      const studentName = keys.length > 0 ? data[keys[0]].name : "Unknown";
-
-      let onTime = 0, late = 0, absent = 0;
-      keys.forEach(key => {
-        const status = data[key].status;
-        if (status === "On Time") onTime++;
-        else if (status === "Late") late++;
-        else if (status === "Absent") absent++;
-      });
-
-      const total = onTime + late + absent;
-      const percent = total ? (((onTime + late) / total) * 100).toFixed(1) : "0";
-
-      document.getElementById("studentName").textContent = studentName;
-      document.getElementById("studentId").textContent = `ID: ${studentId}`;
-      document.getElementById("onTime").textContent = onTime;
-      document.getElementById("late").textContent = late;
-      document.getElementById("absent").textContent = absent;
-      document.getElementById("total").textContent = total;
-      document.getElementById("percentage").textContent = `Attendance: ${percent}%`;
-
-      if (percent < 90) {
-        document.getElementById("warningBox").style.display = "flex";
-      }
-
-      /* PROFILE IMAGE LOADING - KEPT EXACTLY AS IN ORIGINAL CODE */
-      const img = document.getElementById("studentImage");
-      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/login-form-9b836.firebasestorage.app/o/profile_pics%2F${studentId}.jpg?alt=media&token=8442cec8-2799-481d-ba5e-deaea4d30708`;
-      const testImage = new Image();
-      testImage.onload = () => img.src = imageUrl;
-      testImage.onerror = () => console.warn("Profile image not found, using fallback.");
-      testImage.src = imageUrl;
-      /* END OF UNCHANGED PROFILE IMAGE CODE */
-
-      drawChart(onTime, late, absent);
+    if (percent < 90) {
+      document.getElementById("warningBox").style.display = "flex";
     }
 
-    function drawChart(onTime, late, absent) {
-      const ctx = document.getElementById("attendanceChart").getContext("2d");
-      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-light');
+    // ✅ NEW IMAGE RETRIEVAL USING Firebase Storage
+    try {
+      const imgRef = storageRef(storage, `profile_pics/${studentId}.jpg`);
+      const imageUrl = await getDownloadURL(imgRef);
+      document.getElementById("studentImage").src = imageUrl;
+    } catch (error) {
+      console.warn("No profile picture found, using default.");
+      document.getElementById("studentImage").src = "images/default-avatar.png";
+    }
 
-      if (window.attendanceChart instanceof Chart) {
-        window.attendanceChart.destroy();
-      }
+    drawChart(onTime, late, permission, absent);
+  }
 
-      window.attendanceChart = new Chart(ctx, {
-        type: "pie",
-        data: {
-          labels: ["On Time", "Late", "Absent"],
-          datasets: [{
-            data: [onTime, late, absent],
-            backgroundColor: ["#4caf50", "#ff9800", "#f44336"]
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: "bottom" }
+  function drawChart(onTime, late, permission, absent) {
+    const ctx = document.getElementById("attendanceChart").getContext("2d");
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-light');
+
+    if (window.attendanceChart instanceof Chart) {
+      window.attendanceChart.destroy();
+    }
+
+    window.attendanceChart = new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels: ["On Time", "Late", "Permission", "Absent"],
+        datasets: [{
+          data: [onTime, late, permission, absent],
+          backgroundColor: ["#4caf50", "#ff9800", "#9c27b0", "#f44336"]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              color: textColor
+            }
           }
         }
-      });
-    }
+      }
+    });
+  }
 
-    function logout() {
-      Swal.fire({
-        title: 'Logout Confirmation',
-        text: 'Are you sure you want to logout?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#f39c12',
-        cancelButtonColor: '#d1d7e0',
-        confirmButtonText: 'Yes, logout',
-        cancelButtonText: 'Cancel',
-        background: 'rgba(10, 31, 68, 0.9)',
-        color: '#f8f9fa'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          auth.signOut()
-            .then(() => {
-              localStorage.clear();
-              window.location.href = "login.html";
-            })
-            .catch((error) => {
-              console.error("Logout error:", error);
-              Swal.fire('Error', 'Logout failed. Please try again.', 'error');
-            });
-        }
-      });
-    }
+  function logout() {
+    Swal.fire({
+      title: 'Logout Confirmation',
+      text: 'Are you sure you want to logout?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#f39c12',
+      cancelButtonColor: '#d1d7e0',
+      confirmButtonText: 'Yes, logout',
+      cancelButtonText: 'Cancel',
+      background: 'rgba(10, 31, 68, 0.9)',
+      color: '#f8f9fa'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        auth.signOut()
+          .then(() => {
+            localStorage.clear();
+            window.location.href = "login.html";
+          })
+          .catch((error) => {
+            console.error("Logout error:", error);
+            Swal.fire('Error', 'Logout failed. Please try again.', 'error');
+          });
+      }
+    });
+  }
 
-    loadStudentReport();
-  </script>
+  loadStudentReport();
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+</script>
+
 </body>
 </html>

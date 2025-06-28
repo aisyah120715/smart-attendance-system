@@ -619,6 +619,83 @@ header {
   margin-right: 0.5rem;
 }
 
+/* Absence Request Status Section */
+.absence-status-section {
+  background: rgba(26, 58, 143, 0.25);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.absence-status-section h4 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.absence-status-section h4 i {
+  color: var(--secondary);
+}
+
+.absence-status-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.absence-status-list li {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.absence-status-list li:last-child {
+  border-bottom: none;
+}
+
+.absence-status-list li strong {
+  font-weight: 500;
+  color: var(--white);
+}
+
+.absence-status-list li span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.absence-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  align-self: flex-start;
+}
+
+.badge-approved {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.badge-pending {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.badge-rejected {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
 /* Toast Notification */
 .toast {
   position: fixed;
@@ -715,6 +792,10 @@ header {
   .class-grid,
   .class-list {
     grid-template-columns: 1fr;
+  }
+  
+  .absence-status-list li {
+    padding: 0.5rem;
   }
 }
 </style>
@@ -849,6 +930,12 @@ window.loadHome = async () => {
           <p>View your attendance records</p>
         </div>
       </div>
+
+      <!-- Absence Request Status Section -->
+      <div class="absence-status-section">
+        <h4><i class="fas fa-clipboard-list"></i> My Absence Requests</h4>
+        <ul id="absenceStatusList" class="absence-status-list"></ul>
+      </div>
     </div>
   `;
 
@@ -862,8 +949,76 @@ window.loadHome = async () => {
   img.style.objectFit = "cover";
   document.getElementById("profileHeader").prepend(img);
 
+  // Load absence requests
+  await loadAbsenceRequests();
   showLoading(false);
 };
+
+// Function to load all absence requests
+async function loadAbsenceRequests() {
+  const list = document.getElementById("absenceStatusList");
+  if (!studentData || !studentData.username) return;
+
+  const absenceRef = ref(rtdb, "absence_requests");
+
+  try {
+    const snapshot = await get(absenceRef);
+    list.innerHTML = "";
+
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      let hasRequests = false;
+      let requests = [];
+
+      // Collect all requests from all lecturers
+      for (const lecturerId in data) {
+        for (const requestKey in data[lecturerId]) {
+          const req = data[lecturerId][requestKey];
+          if (req.studentId === studentData.username) {
+            hasRequests = true;
+            requests.push({
+              ...req,
+              lecturerId: lecturerId,
+              requestKey: requestKey
+            });
+          }
+        }
+      }
+
+      // Sort requests by lastUpdated (newest first)
+      requests.sort((a, b) => b.lastUpdated - a.lastUpdated);
+
+      // Display requests
+      if (hasRequests) {
+        requests.forEach(req => {
+          const li = document.createElement("li");
+          
+          // Determine badge class based on status
+          let badgeClass = "";
+          if (req.status === "Approved") badgeClass = "badge-approved";
+          else if (req.status === "Pending") badgeClass = "badge-pending";
+          else if (req.status === "Rejected") badgeClass = "badge-rejected";
+          
+          li.innerHTML = `
+            <strong>${req.className} - ${req.date.replaceAll('_', ' ')}</strong>
+            <span>Submitted: ${req.submittedAt}</span>
+            <span class="absence-status-badge ${badgeClass}">${req.status}</span>
+            ${req.reason ? `<span>Reason: ${req.reason}</span>` : ''}
+          `;
+          list.appendChild(li);
+        });
+      } else {
+        list.innerHTML = `<li style="text-align: center; color: var(--text-muted);">No absence requests found</li>`;
+      }
+    } else {
+      list.innerHTML = `<li style="text-align: center; color: var(--text-muted);">No absence requests found</li>`;
+    }
+  } catch (error) {
+    console.error("Error loading absence requests:", error);
+    list.innerHTML = `<li style="text-align: center; color: var(--text-muted);">Error loading requests</li>`;
+  }
+}
+
 window.loadHome = loadHome; 
 
 // --- Profile Page ---
@@ -1006,7 +1161,7 @@ window.openAbsenceForm = async (classId, className, lecturerUsername) => {
         
         <button onclick="loadStudentClasses()" class="back-button">
           <i class="fas fa-arrow-left"></i> Back to Classes
-        </button>
+          </button>
       </div>
     `;
   } catch (err) {
@@ -1158,6 +1313,9 @@ window.submitAbsenceWithUpload = async (classId, className, lecturerUsername, se
     `;
     
     showToast("Absence request submitted successfully!");
+    
+    // Reload absence requests to show the new one
+    await loadAbsenceRequests();
   } catch (err) {
     console.error("Absence submission error:", err);
     
@@ -1310,33 +1468,12 @@ window.loadAttendanceForClass = async (classId, className) => {
   try {
     const [cid, , ckey] = classId.split("/");
     const attendanceRef = ref(rtdb, `attendance/${cid}/class/${ckey}/${studentData.username}`);
-    const absenceRef = ref(rtdb, `absence_requests`);
 
-    // Get both attendance and absence data
-    const [attendanceSnap, absenceSnap] = await Promise.all([
-      get(attendanceRef),
-      get(absenceRef)
-    ]);
+    const snapshot = await get(attendanceRef);
 
     let attendanceData = {};
-    if (attendanceSnap.exists()) {
-      attendanceData = attendanceSnap.val();
-    }
-
-    // Find approved absence requests for this class
-    let approvedAbsences = [];
-    if (absenceSnap.exists()) {
-      const allAbsences = absenceSnap.val();
-      for (const lecturerId in allAbsences) {
-        for (const absenceKey in allAbsences[lecturerId]) {
-          const absence = allAbsences[lecturerId][absenceKey];
-          if (absence.studentId === studentData.username && 
-              absence.classId === classId && 
-              absence.status === "Approved") {
-            approvedAbsences.push(absence.date);
-          }
-        }
-      }
+    if (snapshot.exists()) {
+      attendanceData = snapshot.val();
     }
 
     const sortedDates = Object.keys(attendanceData).sort((a, b) => 
@@ -1355,10 +1492,6 @@ window.loadAttendanceForClass = async (classId, className) => {
               (record.status.toLowerCase().includes("on time") || 
                record.status.toLowerCase().includes("late"));
       }).length;
-      
-      // Count approved absences as present
-      presentCount += approvedAbsences.length;
-      totalCount += approvedAbsences.length;
       
       attendanceRate = Math.round((presentCount / totalCount) * 100);
     }
@@ -1385,30 +1518,6 @@ window.loadAttendanceForClass = async (classId, className) => {
         <tbody>
     `;
 
-    // Add approved absences first
-    approvedAbsences.forEach((date, index) => {
-      html += `
-        <tr style="border-bottom:1px solid rgba(255, 255, 255, 0.1); color: var(--text-light);">
-          <td style="padding:12px; text-align:left;">${index + 1}</td>
-          <td style="padding:12px; text-align:left;">${date.replaceAll('_', ' ')}</td>
-          <td style="padding:12px; text-align:center;">
-            <span style="
-              background:#10b981;
-              padding:4px 12px;
-              border-radius:30px;
-              color:white;
-              font-weight:500;
-              font-size:0.8rem;
-            ">Approved Absence</span>
-          </td>
-          <td style="padding:12px; text-align:left; color: var(--text-light);">
-          <td style="padding:12px; text-align:center;">
-            <i class="fas fa-check-circle" style="color:#10b981;"></i>
-          </td>
-        </tr>
-      `;
-    });
-
     // Add regular attendance records
     sortedDates.forEach((dateKey, index) => {
       const record = attendanceData[dateKey];
@@ -1421,7 +1530,7 @@ window.loadAttendanceForClass = async (classId, className) => {
 
       html += `
         <tr style="border-bottom:1px solid rgba(255, 255, 255, 0.1); color: var(--text-light);">
-          <td style="padding:12px; text-align:left;">${approvedAbsences.length + index + 1}</td>
+          <td style="padding:12px; text-align:left;">${index + 1}</td>
           <td style="padding:12px; text-align:left;">${dateKey.replaceAll('_', ' ')}</td>
           <td style="padding:12px; text-align:center;">
             <span style="
@@ -1444,7 +1553,7 @@ window.loadAttendanceForClass = async (classId, className) => {
 
     // Add export functionality
     document.getElementById('exportBtn').addEventListener('click', () => {
-      exportAttendanceToCSV(sortedDates, attendanceData, approvedAbsences, className);
+      exportAttendanceToCSV(sortedDates, attendanceData, className);
     });
 
     // Show warning if attendance is low
@@ -1485,16 +1594,11 @@ window.loadAttendanceForClass = async (classId, className) => {
   }
 };
 
-function exportAttendanceToCSV(dates, attendanceData, approvedAbsences, className) {
+function exportAttendanceToCSV(dates, attendanceData, className) {
   let csvContent = "data:text/csv;charset=utf-8,";
   
   // Add header
   csvContent += "No,Date,Status,Time,Notes\n";
-  
-  // Add approved absences
-  approvedAbsences.forEach((date, index) => {
-    csvContent += `${index + 1},${date.replaceAll('_', ' ')},Approved Absence,,\n`;
-  });
   
   // Add regular attendance
   dates.forEach((dateKey, index) => {
@@ -1502,7 +1606,7 @@ function exportAttendanceToCSV(dates, attendanceData, approvedAbsences, classNam
     const status = record.status || 'Unknown';
     const timestamp = record.timestamp ? formatTime(record.timestamp) : '';
     
-    csvContent += `${approvedAbsences.length + index + 1},${dateKey.replaceAll('_', ' ')},${status},${timestamp},\n`;
+    csvContent += `${index + 1},${dateKey.replaceAll('_', ' ')},${status},${timestamp},\n`;
   });
   
   // Create download link

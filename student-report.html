@@ -365,12 +365,11 @@
     </section>
   </div>
 
-  <!-- Inside your <script type="module"> -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-  import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js"; // ✅ Added
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+  import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDufExYjU8Y2a1FEWwtbX6tNuL3tO8Mo2s",
@@ -384,8 +383,8 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const auth = getAuth();
-  const storage = getStorage(app); // ✅ Initialize Firebase Storage
+  const auth = getAuth(app);
+  const storage = getStorage(app, 'gs://login-form-9b836.firebasestorage.app');
 
   const urlParams = new URLSearchParams(window.location.search);
   const studentId = urlParams.get('studentId');
@@ -439,13 +438,13 @@
       document.getElementById("warningBox").style.display = "flex";
     }
 
-    // ✅ NEW IMAGE RETRIEVAL USING Firebase Storage
+    // Load profile picture from Firebase Storage
     try {
       const imgRef = storageRef(storage, `profile_pics/${studentId}.jpg`);
       const imageUrl = await getDownloadURL(imgRef);
       document.getElementById("studentImage").src = imageUrl;
     } catch (error) {
-      console.warn("No profile picture found, using default.");
+      console.log("Using default profile picture:", error.message);
       document.getElementById("studentImage").src = "images/default-avatar.png";
     }
 
@@ -497,7 +496,7 @@
       color: '#f8f9fa'
     }).then((result) => {
       if (result.isConfirmed) {
-        auth.signOut()
+        signOut(auth)
           .then(() => {
             localStorage.clear();
             window.location.href = "login.html";

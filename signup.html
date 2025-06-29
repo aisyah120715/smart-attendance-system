@@ -352,23 +352,26 @@
 const emailInput = document.getElementById("signupEmail");
 const roleSelect = document.getElementById("role");
 
-emailInput.addEventListener("blur", async () => {
-  const email = emailInput.value.trim().toLowerCase();
+const usernameInput = document.getElementById("signupUsername");
+
+usernameInput.addEventListener("blur", async () => {
+  const username = usernameInput.value.trim();
   const role = roleSelect.value;
 
-  if (role !== "lecturer") return; 
+  if (role !== "lecturer" || !username) return;
 
   const usersRef = collection(db, "users");
-  const q = query(usersRef, where("email", "==", email), where("role", "==", "lecturer"));
+  const q = query(usersRef, where("username", "==", username), where("role", "==", "lecturer"));
   const snapshot = await getDocs(q);
 
   if (!snapshot.empty) {
     const lecturer = snapshot.docs[0].data();
     document.getElementById("fName").value = lecturer.firstName || "";
     document.getElementById("lName").value = lecturer.lastName || "";
-    document.getElementById("signupUsername").value = lecturer.username || "";
+    document.getElementById("signupEmail").value = lecturer.email || "";
   }
 });
+
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -426,16 +429,7 @@ emailInput.addEventListener("blur", async () => {
   }
 
   let querySnapshot = null;
-  if (role === "lecturer") {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email), where("role", "==", "lecturer"));
-    querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      msg.innerHTML = "<i>❌</i> Your email is not yet approved by admin.";
-      return;
-    }
-  }
+  
 
   let userCredential;
   try {
@@ -452,26 +446,41 @@ emailInput.addEventListener("blur", async () => {
 
   try {
     if (role === "lecturer") {
-      const approvedDoc = querySnapshot.docs[0];
-      await setDoc(doc(db, "users", approvedDoc.id), {
-        email,
-        firstName,
-        lastName,
-        username,
-        role,
-        registered: true,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
-    } else {
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        email,
-        firstName,
-        lastName,
-        username,
-        role,
-        createdAt: new Date().toISOString()
-      });
-    }
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("username", "==", username), where("role", "==", "lecturer"));
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    const existingDoc = snapshot.docs[0];
+    await setDoc(doc(db, "users", existingDoc.id), {
+      email,
+      registered: true,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } else {
+    // Fallback if no matching lecturer found (optional: block or allow)
+    console.warn("Lecturer username not pre-added by admin.");
+    await setDoc(doc(db, "users", userCredential.user.uid), {
+      email,
+      firstName,
+      lastName,
+      username,
+      role,
+      createdAt: new Date().toISOString()
+    });
+  }
+} else {
+  // Normal student or admin registration
+  await setDoc(doc(db, "users", userCredential.user.uid), {
+    email,
+    firstName,
+    lastName,
+    username,
+    role,
+    createdAt: new Date().toISOString()
+  });
+}
+
   } catch (firestoreErr) {
     console.error("❌ Firestore Error:", firestoreErr.message);
     msg.innerHTML = `<i>❗</i> Error saving user to Firestore: ${firestoreErr.message}`;

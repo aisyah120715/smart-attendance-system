@@ -288,7 +288,7 @@
         </select>
         <input type="text" id="fName" placeholder="First Name">
         <input type="text" id="lName" placeholder="Last Name">
-        <input type="text" id="signupUsername" placeholder="e.g, UID123456">
+        <input type="text" id="signupUsername" placeholder="Username">
         <input type="email" id="signupEmail" placeholder="Email Address">
 
         <div class="password-wrapper">
@@ -420,8 +420,8 @@ emailInput.addEventListener("blur", async () => {
     return;
   }
 
-  if ((role === "lecturer" || role === "admin") && !email.endsWith("@uitm.my")) {
-    msg.innerHTML = "<i>📧</i> Lecturer/Admin email must end with @uitm.my";
+  if ((role === "lecturer" || role === "admin") && !email.endsWith("@uitm.edu.my")) {
+    msg.innerHTML = "<i>📧</i> Lecturer/Admin email must end with @uitm.edu.my";
     return;
   }
 

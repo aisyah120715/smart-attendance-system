@@ -35,6 +35,8 @@ exports.sendWarningEmail = functions.https.onRequest((req, res) => {
 
           <p>Please take the necessary steps to improve your attendance.</p>
 
+          <p><em>This notification is generated for FYP purpose only and does not represent an official academic warning.</em></p>
+
           <p>Regards,<br><strong>${lecturerName}</strong></p>
         `
       };

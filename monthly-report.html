@@ -887,43 +887,50 @@ async function fetchAndRender() {
   let studentDataMap = {};
 
   // Process all student data
-  for (const studentId in students) {
+  Object.keys(students).forEach(studentId => {
     const attendanceRecords = students[studentId];
+    
+    // Skip if we've already processed this student
+    if (studentDataMap[studentId]) return;
+
     const isWithinRange = (timestamp) => {
-      const date = timestamp?.split(" ")[0];
+      if (!timestamp) return false;
+      const date = timestamp.split(" ")[0];
       if (!date) return false;
       const month = date.slice(0, 7);
       return month >= fromMonth && month <= toMonth;
     };
 
-    const monthRecords = Object.entries(attendanceRecords)
-      .filter(([_, record]) => isWithinRange(record.timestamp));
+    // Convert to array and filter
+    const recordsArray = Object.values(attendanceRecords);
+    const monthRecords = recordsArray.filter(record => isWithinRange(record.timestamp));
 
-    if (monthRecords.length === 0) continue;
+    if (monthRecords.length === 0) return;
 
-    // Initialize student data if not exists
-    if (!studentDataMap[studentId]) {
-      const studentName = monthRecords[0][1].name || "Unknown";
-      
-      // Skip if filter doesn't match student ID or name
-      if (filter && 
-          !studentId.toLowerCase().includes(filter) && 
-          !studentName.toLowerCase().includes(filter)) {
-        continue;
-      }
-
-      studentDataMap[studentId] = {
-        id: studentId,
-        name: studentName,
-        data: {},
-        present: 0,
-        total: 0
-      };
+    // Get student name from first record
+    const studentName = monthRecords[0]?.name || "Unknown";
+    
+    // Apply search filter
+    if (filter && 
+        !studentId.toLowerCase().includes(filter) && 
+        !studentName.toLowerCase().includes(filter)) {
+      return;
     }
 
+    // Initialize student data
+    studentDataMap[studentId] = {
+      id: studentId,
+      name: studentName,
+      data: {},
+      present: 0,
+      total: 0
+    };
+
     // Process each attendance record
-    monthRecords.forEach(([_, record]) => {
-      const date = record.timestamp.split(" ")[0];
+    monthRecords.forEach(record => {
+      const date = record.timestamp?.split(" ")[0];
+      if (!date) return;
+      
       headers.add(date);
 
       let status = "absent";
@@ -950,7 +957,7 @@ async function fetchAndRender() {
       };
       studentDataMap[studentId].total++;
     });
-  }
+  });
 
   const studentData = Object.values(studentDataMap);
   const dates = Array.from(headers).sort();
@@ -963,6 +970,7 @@ async function fetchAndRender() {
   // Build student rows
   let totalPresent = 0, totalEntries = 0;
   studentData.sort((a, b) => a.name.localeCompare(b.name));
+  
   studentData.forEach((student, idx) => {
     const tr = document.createElement("tr");
     let rowHTML = `

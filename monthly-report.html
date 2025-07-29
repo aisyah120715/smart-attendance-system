@@ -632,7 +632,7 @@
             <option value="2025-01">January</option>
             <option value="2025-02">February</option>
             <option value="2025-03">March</option>
-            <option value="2025-04" selected>April</option>
+            <option value="2025-04">April</option>
             <option value="2025-05">May</option>
             <option value="2025-06">June</option>
             <option value="2025-07">July</option>
@@ -651,7 +651,7 @@
             <option value="2025-03">March</option>
             <option value="2025-04">April</option>
             <option value="2025-05">May</option>
-            <option value="2025-06" selected>June</option>
+            <option value="2025-06">June</option>
             <option value="2025-07">July</option>
             <option value="2025-08">August</option>
             <option value="2025-09">September</option>
@@ -659,49 +659,6 @@
             <option value="2025-11">November</option>
             <option value="2025-12">December</option>
           </select>
-        </div>
-      </div>
-
-      <div id="exportOptions" class="card" style="display: none;">
-        <h3 class="card-title">Export Options</h3>
-        <div class="filter-container">
-          <div class="filter-group">
-            <label for="exportFromMonth" class="form-label">Export From</label>
-            <select id="exportFromMonth" class="form-select">
-              <option value="2025-01">January</option>
-              <option value="2025-02">February</option>
-              <option value="2025-03">March</option>
-              <option value="2025-04">April</option>
-              <option value="2025-05">May</option>
-              <option value="2025-06">June</option>
-              <option value="2025-07">July</option>
-              <option value="2025-08">August</option>
-              <option value="2025-09">September</option>
-              <option value="2025-10">October</option>
-              <option value="2025-11">November</option>
-              <option value="2025-12">December</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="exportToMonth" class="form-label">Export To</label>
-            <select id="exportToMonth" class="form-select">
-              <option value="2025-01">January</option>
-              <option value="2025-02">February</option>
-              <option value="2025-03">March</option>
-              <option value="2025-04">April</option>
-              <option value="2025-05">May</option>
-              <option value="2025-06">June</option>
-              <option value="2025-07">July</option>
-              <option value="2025-08">August</option>
-              <option value="2025-09">September</option>
-              <option value="2025-10">October</option>
-              <option value="2025-11">November</option>
-              <option value="2025-12">December</option>
-            </select>
-          </div>
-          <div class="filter-group" style="align-self: flex-end;">
-            <button id="confirmExport" class="btn btn-primary w-100">Confirm Export</button>
-          </div>
         </div>
       </div>
 
@@ -842,15 +799,21 @@ async function loadLecturerClasses(username) {
 }
 
 function setupEventListeners() {
-  // First remove any existing listeners
+  // First remove all existing listeners to prevent duplicates
   [classSelect, filterFromMonth, filterToMonth, studentFilter].forEach(el => {
-    el.addEventListener("change", handleFilterChange);
-    el.addEventListener("input", handleFilterInput);
+    el.removeEventListener("change", handleFilterChange);
+    el.removeEventListener("input", handleFilterInput);
   });
 
-  // Add fresh listeners
+  // Add appropriate listeners based on element type
   classSelect.addEventListener("change", handleFilterChange);
+  filterFromMonth.addEventListener("change", handleFilterChange);
+  filterToMonth.addEventListener("change", handleFilterChange);
   studentFilter.addEventListener("input", handleFilterInput);
+  
+  // Add export button listeners
+  document.getElementById("excelBtn").addEventListener("click", exportToExcel);
+  document.getElementById("pdfBtn").addEventListener("click", exportToPDF);
 }
 
 function handleFilterChange() {
@@ -865,17 +828,22 @@ function handleFilterInput() {
 }
 
 async function fetchAndRender() {
+  // Clear previous data
+  tableBody.innerHTML = "";
+  summaryDiv.innerHTML = "";
+  
   const cls = classSelect.value;
   const fromMonth = filterFromMonth.value;
   const toMonth = filterToMonth.value;
   const filter = studentFilter.value.trim().toLowerCase();
 
-  selectedClass.textContent = classSelect.options[classSelect.selectedIndex].text;
-  reportSection.style.display = cls ? "block" : "none";
-  tableBody.innerHTML = "";
-  summaryDiv.innerHTML = "";
+  if (!fromMonth || !toMonth || !cls) {
+    reportSection.style.display = "none";
+    return;
+  }
 
-  if (!cls) return;
+  selectedClass.textContent = classSelect.options[classSelect.selectedIndex].text;
+  reportSection.style.display = "block";
 
   const [classId, , classKey] = cls.split("/");
   const classSnap = await db.ref(`attendance/${classId}/class/${classKey}`).once("value");
@@ -885,52 +853,61 @@ async function fetchAndRender() {
   const students = classSnap.val();
   let headers = new Set();
   let studentDataMap = {};
+  
+  // Track processed students more robustly
+  const processedStudents = new Map(); // Using Map for better control
 
-  // Process all student data
   Object.keys(students).forEach(studentId => {
+    // Skip processing if we've already handled this student
+    if (processedStudents.has(studentId)) {
+      return;
+    }
+    
+    // Mark this student as processed immediately
+    processedStudents.set(studentId, true);
+
     const attendanceRecords = students[studentId];
+    const firstRecordWithName = Object.values(attendanceRecords).find(r => r && r.name);
+    const studentName = firstRecordWithName?.name || "Unknown";
     
-    // Skip if we've already processed this student
-    if (studentDataMap[studentId]) return;
-
-    const isWithinRange = (timestamp) => {
-      if (!timestamp) return false;
-      const date = timestamp.split(" ")[0];
-      if (!date) return false;
-      const month = date.slice(0, 7);
-      return month >= fromMonth && month <= toMonth;
-    };
-
-    // Convert to array and filter
-    const recordsArray = Object.values(attendanceRecords);
-    const monthRecords = recordsArray.filter(record => isWithinRange(record.timestamp));
-
-    if (monthRecords.length === 0) return;
-
-    // Get student name from first record
-    const studentName = monthRecords[0]?.name || "Unknown";
-    
-    // Apply search filter
-    if (filter && 
-        !studentId.toLowerCase().includes(filter) && 
-        !studentName.toLowerCase().includes(filter)) {
+    if (filter && !studentId.toLowerCase().includes(filter) && !studentName.toLowerCase().includes(filter)) {
       return;
     }
 
-    // Initialize student data
-    studentDataMap[studentId] = {
-      id: studentId,
-      name: studentName,
-      data: {},
-      present: 0,
-      total: 0
-    };
+    // Initialize student data only if not already present
+    if (!studentDataMap[studentId]) {
+      studentDataMap[studentId] = {
+        id: studentId,
+        name: studentName,
+        data: {},
+        present: 0,
+        total: 0
+      };
+    }
 
-    // Process each attendance record
-    monthRecords.forEach(record => {
-      const date = record.timestamp?.split(" ")[0];
+    const dateRecords = {};
+
+    Object.entries(attendanceRecords).forEach(([recordKey, record]) => {
+      if (!record || typeof record !== 'object' || recordKey === "name" || recordKey === "studentId") {
+        return;
+      }
+
+      if (!record.timestamp) return;
+      
+      const date = record.timestamp.split(" ")[0];
       if (!date) return;
       
+      const month = date.slice(0, 7);
+      if (month < fromMonth || month > toMonth) return;
+
+      // Only keep the most recent record for each date
+      if (!dateRecords[date] || new Date(record.timestamp) > new Date(dateRecords[date].timestamp)) {
+        dateRecords[date] = record;
+      }
+    });
+
+    // Process the filtered date records
+    Object.entries(dateRecords).forEach(([date, record]) => {
       headers.add(date);
 
       let status = "absent";
@@ -950,16 +927,17 @@ async function fetchAndRender() {
         studentDataMap[studentId].present++;
       }
 
+      studentDataMap[studentId].total++;
       studentDataMap[studentId].data[date] = { 
         status, 
         statusIcon,
         originalStatus: record.status 
       };
-      studentDataMap[studentId].total++;
     });
   });
-
-  const studentData = Object.values(studentDataMap);
+  
+  // Convert the map to array and filter out students with no records
+  const studentData = Object.values(studentDataMap).filter(s => s.total > 0);
   const dates = Array.from(headers).sort();
 
   // Build header row
@@ -1020,72 +998,8 @@ async function fetchAndRender() {
 // Export Excel function
 window.exportToExcel = () => {
   const clone = document.getElementById("attendanceTable").cloneNode(true);
-  const fromMonth = document.getElementById("exportFromMonth").value;
-  const toMonth = document.getElementById("exportToMonth").value;
-
-  const isDateInRange = (dateStr) => {
-    const month = dateStr.slice(0, 7);
-    return month >= fromMonth && month <= toMonth;
-  };
-
+  
   // Replace icons with text
-  clone.querySelectorAll("td,th").forEach(cell => {
-    if (cell.innerHTML.includes("fa-check-circle")) {
-      if (cell.classList.contains("permission")) {
-        cell.textContent = "Absent with Permission";
-      } else {
-        cell.textContent = "On Time";
-      }
-    } else if (cell.innerHTML.includes("fa-exclamation-circle")) {
-      cell.textContent = "Late";
-    } else if (cell.innerHTML.includes("fa-times-circle")) {
-      cell.textContent = "Absent";
-    }
-  });
-
-  // Get all header cells
-  const headerCells = Array.from(clone.querySelectorAll("thead th"));
-  const dateColumnIndexes = [];
-
-  headerCells.forEach((cell, index) => {
-    const text = cell.textContent.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-      if (!isDateInRange(text)) {
-        dateColumnIndexes.push(index);
-      }
-    }
-  });
-
-  // Remove out-of-range date columns by reverse index (to avoid shifting)
-  clone.querySelectorAll("tr").forEach(row => {
-    dateColumnIndexes.slice().reverse().forEach(index => {
-      if (row.cells[index]) row.deleteCell(index);
-    });
-  });
-
-  const wb = XLSX.utils.table_to_book(clone, { sheet: "Attendance" });
-  XLSX.writeFile(wb, "Filtered_Attendance_Report.xlsx");
-};
-
-// Export PDF function
-window.exportToPDF = () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('landscape');
-  doc.setFontSize(18);
-  doc.setTextColor(33, 150, 243);
-  doc.text("Monthly Attendance Report", 14, 20);
-
-  const fromMonth = document.getElementById("exportFromMonth").value;
-  const toMonth = document.getElementById("exportToMonth").value;
-
-  const isDateInRange = (dateStr) => {
-    const month = dateStr.slice(0, 7);
-    return month >= fromMonth && month <= toMonth;
-  };
-
-  const clone = document.getElementById("attendanceTable").cloneNode(true);
-
-  // Convert icons to text
   clone.querySelectorAll("td,th").forEach(cell => {
     if (cell.innerHTML.includes("fa-check-circle")) {
       if (cell.classList.contains("permission")) {
@@ -1103,7 +1017,40 @@ window.exportToPDF = () => {
   // Remove "View" column
   clone.querySelectorAll("tr").forEach(row => row.deleteCell(row.cells.length - 1));
 
-  // Find date columns to remove
+  const wb = XLSX.utils.table_to_book(clone, { sheet: "Attendance" });
+  XLSX.writeFile(wb, `Attendance_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+};
+
+// Export PDF function
+window.exportToPDF = () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(18);
+  doc.setTextColor(33, 150, 243);
+  doc.text("Monthly Attendance Report", 14, 20);
+
+  const clone = document.getElementById("attendanceTable").cloneNode(true);
+
+  // Convert icons to text
+  clone.querySelectorAll("td,th").forEach(cell => {
+    if (cell.innerHTML.includes("fa-check-circle")) {
+      if (cell.classList.contains("permission")) {
+        cell.textContent = "Absent with Permission";
+      } else {
+        cell.textContent = "On Time";
+      }
+    } else if (cell.innerHTML.includes("fa-exclamation-circle")) {
+      cell.textContent = "Late";
+    } else if (cell.innerHTML.includes("fa-times-circle")) {
+      cell.textContent = "Absent";
+    }
+  });
+  
+  // Remove "View" column
+  clone.querySelectorAll("tr").forEach(row => row.deleteCell(row.cells.length - 1));
+
+  // Find date columns to remove - now using isDateInRange function
   const headerCells = Array.from(clone.querySelectorAll("thead th"));
   const dateColumnIndexes = [];
 
@@ -1146,7 +1093,7 @@ window.exportToPDF = () => {
     }
   });
 
-  doc.save("Filtered_Attendance_Report.pdf");
+  doc.save("Monthly Attendance Report.pdf");
 };
 
 let exportType = "";
@@ -1197,6 +1144,55 @@ function logout() {
     }
   });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // Fetch lecturer's full name from Firestore
+      firestore.collection('users').doc(user.uid).get().then(doc => {
+        if (doc.exists) {
+          const userData = doc.data();
+          const firstName = userData.firstName || '';
+          const lastName = userData.lastName || '';
+          const displayName = `${firstName} ${lastName}`.trim() || 'Lecturer';
+          headerNameElement.textContent = displayName;
+        } else {
+          // Fallback to username if no name in Firestore
+          const username = localStorage.getItem("username");
+          headerNameElement.textContent = username || 'Lecturer';
+        }
+      }).catch(error => {
+        console.error("Error fetching user data:", error);
+        const username = localStorage.getItem("username");
+        headerNameElement.textContent = username || 'Lecturer';
+      });
+
+      const username = localStorage.getItem("username");
+      if (!username) {
+        alert("Username not found.");
+        return;
+      }
+      
+      loadLecturerClasses(username);
+      setupEventListeners();
+      
+      // Add export button listeners
+      const excelBtn = document.getElementById("excelBtn");
+      const pdfBtn = document.getElementById("pdfBtn");
+      
+      if (excelBtn) {
+        excelBtn.addEventListener("click", exportToExcel);
+      }
+      
+      if (pdfBtn) {
+        pdfBtn.addEventListener("click", exportToPDF);
+      }
+    } else {
+      alert("Not logged in.");
+      window.location.href = "login.html";
+    }
+  });
+});
 </script>
 </body>
 </html>

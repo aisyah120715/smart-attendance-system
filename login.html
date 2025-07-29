@@ -219,12 +219,38 @@
       cursor: pointer;
     }
 
-      input::placeholder {
-    color: var(--text-muted);
-    opacity: 0.85;
-  }
+    input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
 
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      display: none;
+    }
 
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--secondary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
     @media (max-width: 768px) {
       body {
@@ -244,6 +270,11 @@
   </style>
 </head>
 <body>
+
+<!-- Loading Overlay -->
+<div class="loading" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
 
 <!-- TOP BAR -->
 <div class="top-bar">
@@ -281,7 +312,7 @@
     <button type="button" id="loginBtn">Login</button>
 
     <div class="social-login">
-      Or login with :   <a href="#" id="googleLoginLink">  Google</a>
+      Or login with: <a href="#" id="googleLoginLink">Google</a>
     </div>
 
     <div class="signup-link" onclick="window.location.href='signup.html'">
@@ -302,7 +333,15 @@
 <!-- FIREBASE LOGIN SCRIPT -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    setPersistence, 
+    browserLocalPersistence, 
+    signInWithPopup, 
+    GoogleAuthProvider, 
+    sendPasswordResetEmail 
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -315,54 +354,73 @@
   };
 
   const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-async function login() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("signupPassword").value;
-  const role = document.getElementById("role").value;
-  const msg = document.getElementById("message");
-
-  msg.style.color = "red";
-  msg.textContent = "";
-
-  if (!email || !password) {
-    msg.textContent = "Please fill in both email and password.";
-    return;
+  // Show loading spinner
+  function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
   }
 
-  try {
-    await setPersistence(auth, browserLocalPersistence);  // ✅ correct persistence here
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+  // Hide loading spinner
+  function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
 
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      if (data.role === role) {
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("username", data.username || "");
-        msg.style.color = "green";
-        msg.textContent = "Login successful! Redirecting...";
-        setTimeout(() => {
-          if (role === "admin") location.href = "dashboard_admin.html";
-          else if (role === "lecturer") location.href = "dashboard_lecturer.html";
-          else location.href = "dashboard_student.html";
-        }, 1500);
-      } else {
-        msg.textContent = "Role mismatch. Please select the correct role.";
-      }
-    } else {
-      msg.textContent = "User record not found.";
+  // Toggle password visibility
+  function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+  }
+
+  async function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const role = document.getElementById("role").value;
+    const msg = document.getElementById("message");
+
+    msg.style.color = "red";
+    msg.textContent = "";
+
+    if (!email || !password) {
+      msg.textContent = "Please fill in both email and password.";
+      return;
     }
-  } catch (error) {
-    msg.textContent = error.message.includes("auth/wrong-password") 
-      ? "Wrong password." 
-      : error.message.includes("auth/user-not-found") 
-        ? "User not found. Please register." 
-        : error.message;
+
+    showLoading();
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        if (data.role === role) {
+          localStorage.setItem("role", data.role);
+          localStorage.setItem("username", data.username || "");
+          msg.style.color = "green";
+          msg.textContent = "Login successful! Redirecting...";
+          setTimeout(() => {
+            if (role === "admin") location.href = "dashboard_admin.html";
+            else if (role === "lecturer") location.href = "dashboard_lecturer.html";
+            else location.href = "dashboard_student.html";
+          }, 1500);
+        } else {
+          msg.textContent = "Role mismatch. Please select the correct role.";
+        }
+      } else {
+        msg.textContent = "User record not found.";
+      }
+    } catch (error) {
+      msg.textContent = error.message.includes("auth/wrong-password") 
+        ? "Wrong password." 
+        : error.message.includes("auth/user-not-found") 
+          ? "User not found. Please register." 
+          : error.message;
+    } finally {
+      hideLoading();
+    }
   }
-}
 
   async function resetPassword() {
     const email = document.getElementById("email").value;
@@ -374,6 +432,7 @@ async function login() {
       return;
     }
 
+    showLoading();
     try {
       await sendPasswordResetEmail(auth, email);
       msg.style.color = "green";
@@ -381,21 +440,45 @@ async function login() {
     } catch (error) {
       msg.style.color = "red";
       msg.textContent = error.message;
+    } finally {
+      hideLoading();
     }
   }
 
   async function googleLogin() {
     const provider = new GoogleAuthProvider();
     const msg = document.getElementById("message");
+    const role = document.getElementById("role").value;
+
+    // Add additional scopes
+    provider.addScope('profile');
+    provider.addScope('email');
+
+    showLoading();
+    msg.textContent = "Signing in with Google...";
+    msg.style.color = "var(--text-light)";
 
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const docRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(docRef);
+      const result = await signInWithPopup(auth, provider).catch(err => {
+        if (err.code === 'auth/popup-blocked') {
+          throw new Error("Popup blocked. Please allow popups for this site.");
+        }
+        if (err.code === 'auth/popup-closed-by-user') {
+          throw new Error("Popup closed before completing sign in.");
+        }
+        throw err;
+      });
+      
+      const userDoc = await getDoc(doc(db, "users", result.user.uid));
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        
+        // Check if the selected role matches the user's role
+        if (userData.role !== role) {
+          throw new Error(`Please select "${userData.role}" as your role to continue.`);
+        }
+        
         localStorage.setItem("role", userData.role);
         localStorage.setItem("username", userData.username || "");
 
@@ -411,10 +494,12 @@ async function login() {
         msg.style.color = "red";
         msg.textContent = "Your account is not registered in the system.";
       }
-
     } catch (error) {
       msg.style.color = "red";
       msg.textContent = error.message;
+      console.error("Google sign-in error:", error);
+    } finally {
+      hideLoading();
     }
   }
 
@@ -425,14 +510,9 @@ async function login() {
       googleLogin();
     });
     document.getElementById("forgotPassword").addEventListener("click", resetPassword);
-  });
-  function togglePassword(id) {
-      const input = document.getElementById(id);
-      input.type = input.type === "password" ? "text" : "password";
-    }
     window.togglePassword = togglePassword;
+  });
 </script>
-
 
 </body>
 </html>

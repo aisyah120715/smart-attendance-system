@@ -166,18 +166,6 @@
       text-decoration: underline;
     }
 
-    .auth-form .social-login {
-      display: flex;
-      justify-content: center;
-      font-size: 0.85em;
-      margin-top: 10px;
-    }
-
-    .social-login a {
-      color: var(--secondary);
-      text-decoration: none;
-    }
-
     .message {
       text-align: center;
       margin-top: 0.5em;
@@ -311,10 +299,6 @@
 
     <button type="button" id="loginBtn">Login</button>
 
-    <div class="social-login">
-      Or login with: <a href="#" id="googleLoginLink">Google</a>
-    </div>
-
     <div class="signup-link" onclick="window.location.href='signup.html'">
       Don't have an account? Sign Up
     </div>
@@ -338,8 +322,6 @@
     signInWithEmailAndPassword, 
     setPersistence, 
     browserLocalPersistence, 
-    signInWithPopup, 
-    GoogleAuthProvider, 
     sendPasswordResetEmail 
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
@@ -445,70 +427,8 @@
     }
   }
 
-  async function googleLogin() {
-    const provider = new GoogleAuthProvider();
-    const msg = document.getElementById("message");
-    const role = document.getElementById("role").value;
-
-    // Add additional scopes
-    provider.addScope('profile');
-    provider.addScope('email');
-
-    showLoading();
-    msg.textContent = "Signing in with Google...";
-    msg.style.color = "var(--text-light)";
-
-    try {
-      const result = await signInWithPopup(auth, provider).catch(err => {
-        if (err.code === 'auth/popup-blocked') {
-          throw new Error("Popup blocked. Please allow popups for this site.");
-        }
-        if (err.code === 'auth/popup-closed-by-user') {
-          throw new Error("Popup closed before completing sign in.");
-        }
-        throw err;
-      });
-      
-      const userDoc = await getDoc(doc(db, "users", result.user.uid));
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        
-        // Check if the selected role matches the user's role
-        if (userData.role !== role) {
-          throw new Error(`Please select "${userData.role}" as your role to continue.`);
-        }
-        
-        localStorage.setItem("role", userData.role);
-        localStorage.setItem("username", userData.username || "");
-
-        msg.style.color = "green";
-        msg.textContent = `Welcome ${userData.role}! Redirecting...`;
-
-        setTimeout(() => {
-          if (userData.role === "admin") location.href = "dashboard_admin.html";
-          else if (userData.role === "lecturer") location.href = "dashboard_lecturer.html";
-          else location.href = "dashboard_student.html";
-        }, 1500);
-      } else {
-        msg.style.color = "red";
-        msg.textContent = "Your account is not registered in the system.";
-      }
-    } catch (error) {
-      msg.style.color = "red";
-      msg.textContent = error.message;
-      console.error("Google sign-in error:", error);
-    } finally {
-      hideLoading();
-    }
-  }
-
   window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("loginBtn").addEventListener("click", login);
-    document.getElementById("googleLoginLink").addEventListener("click", (e) => {
-      e.preventDefault();
-      googleLogin();
-    });
     document.getElementById("forgotPassword").addEventListener("click", resetPassword);
     window.togglePassword = togglePassword;
   });

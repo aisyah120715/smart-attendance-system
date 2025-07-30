@@ -1023,77 +1023,137 @@ window.exportToExcel = () => {
 
 // Export PDF function
 window.exportToPDF = () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  doc.setFontSize(18);
-  doc.setTextColor(33, 150, 243);
-  doc.text("Monthly Attendance Report", 14, 20);
-
-  const clone = document.getElementById("attendanceTable").cloneNode(true);
-
-  // Convert icons to text
-  clone.querySelectorAll("td,th").forEach(cell => {
-    if (cell.innerHTML.includes("fa-check-circle")) {
-      if (cell.classList.contains("permission")) {
-        cell.textContent = "Absent with Permission";
-      } else {
-        cell.textContent = "On Time";
-      }
-    } else if (cell.innerHTML.includes("fa-exclamation-circle")) {
-      cell.textContent = "Late";
-    } else if (cell.innerHTML.includes("fa-times-circle")) {
-      cell.textContent = "Absent";
+  try {
+    // Check if jsPDF is available
+    if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+      throw new Error('jsPDF library not loaded properly');
     }
-  });
-  
-  // Remove "View" column
-  clone.querySelectorAll("tr").forEach(row => row.deleteCell(row.cells.length - 1));
 
-  // Find date columns to remove - now using isDateInRange function
-  const headerCells = Array.from(clone.querySelectorAll("thead th"));
-  const dateColumnIndexes = [];
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
 
-  headerCells.forEach((cell, index) => {
-    const text = cell.textContent.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-      if (!isDateInRange(text)) {
-        dateColumnIndexes.push(index);
+    // Add title and class info
+    doc.setFontSize(18);
+    doc.setTextColor(33, 150, 243);
+    doc.text("Monthly Attendance Report", 14, 15);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Class: ${document.getElementById('selectedClass').textContent}`, 14, 22);
+
+    // Prepare table data
+    const table = document.getElementById("attendanceTable");
+    const headers = [];
+    const rows = [];
+
+    // Get headers - skip the "Actions" column
+    const headerCells = Array.from(table.querySelectorAll("thead th")).slice(0, -1);
+    headerCells.forEach((th, index) => {
+      let headerText = th.textContent.trim();
+      
+      // Format dates to remove spaces (e.g., "2025-0 5-01" → "2025-05-01")
+      if (headerText.match(/\d{4}-\d \d-\d{2}/)) {
+        headerText = headerText.replace(/(\d{4})-(\d) (\d)-(\d{2})/, '$1-$2$3-$4');
       }
-    }
-  });
-
-  // Remove columns in reverse order
-  clone.querySelectorAll("tr").forEach(row => {
-    dateColumnIndexes.slice().reverse().forEach(index => {
-      if (row.cells[index]) row.deleteCell(index);
+      
+      headers.push({
+        title: headerText,
+        dataKey: index.toString()
+      });
     });
-  });
 
-  doc.autoTable({
-    html: clone,
-    startY: 30,
-    headStyles: {
-      fillColor: [29, 78, 216],
-      textColor: 255,
-      fontSize: 10,
-      halign: 'center'
-    },
-    bodyStyles: {
-      fontSize: 9,
-      textColor: 50
-    },
-    alternateRowStyles: {
-      fillColor: [240, 240, 240]
-    },
-    styles: {
-      overflow: 'linebreak',
-      cellPadding: 2,
-      halign: 'center',
-    }
-  });
+    // Get rows data
+    const bodyRows = table.querySelectorAll("tbody tr");
+    bodyRows.forEach(tr => {
+      const rowData = {};
+      const cells = Array.from(tr.querySelectorAll("td")).slice(0, -1); // Skip "Actions" column
+      
+      cells.forEach((td, index) => {
+        // Convert icons to text
+        let cellText = td.textContent.trim();
+        if (td.innerHTML.includes("fa-check-circle")) {
+          if (td.classList.contains("permission")) {
+            cellText = "Permission";
+          } else {
+            cellText = "Present";
+          }
+        } else if (td.innerHTML.includes("fa-exclamation-circle")) {
+          cellText = "Late";
+        } else if (td.innerHTML.includes("fa-times-circle")) {
+          cellText = "Absent";
+        }
+        
+        // Format percentage values (e.g., "90,9 %" → "90.9%")
+        if (index === cells.length - 1 && cellText.includes('%')) {
+          cellText = cellText.replace(',', '.').replace(' ', '');
+        }
+        
+        rowData[index.toString()] = cellText;
+      });
+      rows.push(rowData);
+    });
 
-  doc.save("Monthly Attendance Report.pdf");
+    // Generate the table with better column widths
+    doc.autoTable({
+      head: [headers.map(h => h.title)],
+      body: rows.map(row => headers.map(h => row[h.dataKey])),
+      startY: 30,
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontSize: 9,
+        halign: 'center',
+        cellPadding: 2
+      },
+      bodyStyles: {
+        fontSize: 8,
+        textColor: 50,
+        cellPadding: 2
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240]
+      },
+      margin: { top: 30 },
+      styles: {
+        overflow: 'linebreak',
+        cellPadding: 2,
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' }, // No. column
+        1: { cellWidth: 25, halign: 'center' }, // Student ID
+        2: { cellWidth: 30, halign: 'left' },   // Name
+        // Date columns
+        ...Object.fromEntries(
+          headers.slice(3, -3).map((_, i) => [i + 3, { cellWidth: 15, halign: 'center' }])
+        ),
+        // Last 3 columns (Present, Total, %)
+        [headers.length - 3]: { cellWidth: 15, halign: 'center' },
+        [headers.length - 2]: { cellWidth: 15, halign: 'center' },
+        [headers.length - 1]: { cellWidth: 15, halign: 'center' }
+      },
+      didDrawPage: function(data) {
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        if (data.pageNumber === pageCount) {
+          doc.setFontSize(10);
+          doc.text(`Exported on: ${new Date().toLocaleString()}`, 
+                  data.settings.margin.left, 
+                  doc.internal.pageSize.height - 10);
+        }
+      }
+    });
+
+    // Save the PDF
+    doc.save(`Attendance_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+  } catch (error) {
+    console.error('PDF export error:', error);
+    Swal.fire({
+      title: 'Export Error',
+      text: 'Failed to generate PDF. Please try again or check console for details.',
+      icon: 'error'
+    });
+  }
 };
 
 let exportType = "";
@@ -1176,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', function() {
       loadLecturerClasses(username);
       setupEventListeners();
       
-      // Add export button listeners
+      // Add export button listeners here
       const excelBtn = document.getElementById("excelBtn");
       const pdfBtn = document.getElementById("pdfBtn");
       
